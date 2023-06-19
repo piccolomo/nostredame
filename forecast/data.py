@@ -8,7 +8,6 @@ from forecast.season import season_class
 from forecast.prediction import prediction_class
 from forecast.values import values_class
 import pandas as pd
-from forecast.find import find_class
 from forecast.study import study_class
 from forecast.predictor import dictionary
 
@@ -27,7 +26,7 @@ def from_csv(path, delimiter = ' ', first_row = 0, length = None, time_col = 0, 
     data = data_class(time, values)
     return data
 
-class data_class(plot_data, backup_class, copy_class, find_class):
+class data_class(plot_data, backup_class, copy_class):
     def __init__(self, time = [], values = []):
         self.set_name(); self.set_unit()
         
@@ -381,5 +380,4 @@ class data_class(plot_data, backup_class, copy_class, find_class):
 
     # def find_cubist(self, order = 10, log = True):
     #     arguments = dictionary.cubist.all(order)
-    #     return self.find_best(function_name = "use_cubist", arguments = arguments, log = log)    
-    
+    #     return self.find_best(function_name = "use_cubist", arguments = arguments, log = log)

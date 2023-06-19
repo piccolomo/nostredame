@@ -63,5 +63,3 @@ def mean_quality(qualities, weights):
     new.rms = tl.mean([el.rms for el in qualities], weights)
     new.update_label()
     return new
-
-    
