@@ -42,7 +42,7 @@ class plot_class():
         plt.title(title)
 
         plt.legend()
-        plt.show(block = 0)
+        show()
         return self
 
     def plot_acf(self):
@@ -52,7 +52,7 @@ class plot_class():
         plt.xlabel("Period")
         plt.ylabel("ACF")
         plt.title("Autocorrelation Plot of " + self._residuals_label)
-        plt.show(block = 0)
+        show()
         return self
 
     def plot_fft(self):
@@ -63,7 +63,7 @@ class plot_class():
         plt.xlabel("Period")
         plt.ylabel("FFT")
         plt.title("Fourier Plot of " + self._residuals_label)
-        plt.show(block = 0)
+        show()
         return self
 
     def save_plot(self, name = None):
@@ -92,8 +92,8 @@ def get_screen_size():
             height, width = None, None
         width, height = int(width), int(height)
     except:
-        print("screen size failed in", platform, ": defaulting to 2560, 1440")
-        width, height = 2560, 1440
+        width, height = 1920, 1080
+        print("screen size failed in", platform, ": defaulting to", width, height)
     return width, height
 
 def set_plot_size():
@@ -108,6 +108,10 @@ def set_plot_size():
 
     fs = round(x / 80)
     plt.rcParams.update({'font.size': fs, "font.family": "sans-serif"})
+
+def show():
+    plt.pause(0.01);
+    plt.show(block = 0)
 
 get_fft = lambda data, p = 1: np.abs(rfft(data)) ** p
 

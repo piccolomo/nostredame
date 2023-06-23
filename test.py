@@ -77,7 +77,7 @@ data.update_season(*seasons, detrend = 3)
 #es = data.find_es(es_seasons)
 #data.use_es(es)
 
-data.use_auto_arima(fr.dictionary.auto_arima.default())
+#data.use_auto_arima(fr.dictionary.auto_arima.default())
 
 # arima = data.find_arima([52], order = 1)
 # data.use_arima(arima)
