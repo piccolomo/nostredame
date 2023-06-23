@@ -1,6 +1,8 @@
 import forecast as fr
 import plotext as plx
 
+fr.simple_print(1)
+
 # path = plx.join_paths(fr.input_folder, "repairs.csv")
 # data = f.read_data(path, delimiter = ',', form = "%Y-%m-%d %H:%M:%S.%f")
 # data.set_name("weekly repairs")

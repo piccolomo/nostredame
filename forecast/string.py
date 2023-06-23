@@ -4,9 +4,22 @@ import re, sys
 
 platform = 'windows' if  sys.platform in ['win32', 'cygwin'] else 'unix'
 
+# Escape Codes 
+
+def simple_print(simple = True):
+    global bold_escape
+    global end_escape
+    global delete_line_escape
+
+    bold_escape = '' if simple else '\x1b[1m'
+    end_escape = '' if simple else '\x1b[0m'
+    delete_line_escape = '' if simple else '\033[A\033[2K'
+
+simple_print(False)
+
 nl = "\n"
 percentage = lambda num, total = 1: 100 * num / total
-bold = lambda string: '\x1b[1m' + string + '\x1b[0m'
+bold = lambda string: bold_escape + string + end_escape
 enclose_squared = lambda string: '[' + str(string) + ']' if string != "" else string
 enclose_circled = lambda string: '(' + str(string) + ')' if string != "" else string
 
@@ -40,7 +53,7 @@ def dictionary_to_string(dictionary):
     dictionary = {el: rounding(dictionary[el]) for el in dictionary}
     return str(dictionary)
 
-delete_line = lambda: sys.stdout.write("\033[A\033[2K")
+delete_line = lambda: sys.stdout.write(delete_line_escape)
 def indicator(i, tot): # i goes from 1 to tot
     delete_line() if i != 1 else None 
     print(pad_round(percentage(i, tot), 5) + " %")
