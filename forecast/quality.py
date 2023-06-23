@@ -1,6 +1,12 @@
-import forecast.tools as tl
+from forecast.values import rms, mean, has_nan
 from forecast.backup import copy_class
-# from prettytable import PrettyTable
+
+from forecast.string import is_like_list, pad_round, pad, nl, percentage
+from sklearn.metrics import mean_absolute_percentage_error as mape
+from sklearn.metrics import r2_score as r2
+
+import numpy as np
+
 
 class quality_class(copy_class):
     def __init__(self):
@@ -27,39 +33,35 @@ class quality_class(copy_class):
         self.short_label = label
 
     def update_long_label(self):
-        label =  tl.pad("Mape", 11)   + self.get_mape_string() + " %" + tl.nl
-        label += tl.pad("iR2", 11) + self.get_ir2_string()  + " %" + tl.nl
-        label += tl.pad("Rms", 11)    + self.get_rms_string()
+        label =  pad("Mape", 11)   + self.get_mape_string() + " %" + nl
+        label += pad("iR2", 11) + self.get_ir2_string()  + " %" + nl
+        label += pad("Rms", 11)    + self.get_rms_string()
         self.long_label = label
         
     def get_mape_string(self, length = 5):
-        return tl.pad_round(tl.percentage(self.mape), length) 
+        return pad_round(percentage(self.mape), length) 
 
     def get_ir2_string(self, length = 5):
-        return tl.pad_round(tl.percentage(self.ir2), length)
+        return pad_round(percentage(self.ir2), length)
 
     def get_rms_string(self, length = 5):
-        return tl.pad_round(self.rms, length)
+        return pad_round(self.rms, length)
         
     def __str__(self):
         #self.update_label()
         return self.long_label
-    
+
+
+# Utilities
+nan = np.nan
+no_nan = lambda data: not has_nan(data)
+
 def get_qualities(y_true, y_pred):
     length = len(y_true)
-    good_data = tl.no_nan(y_pred) and tl.no_nan(y_true) and length > 0
+    good_data = no_nan(y_pred) and no_nan(y_true) and length > 0
         
-    ir2 = tl.r2(y_true, y_pred) if good_data else tl.nan
-    mape = tl.mape(y_true, y_pred) if good_data else tl.nan
-    rms = tl.rms(y_true - y_pred) if good_data else tl.nan
+    r2_score = r2(y_true, y_pred) if good_data else nan
+    mape_score = mape(y_true, y_pred) if good_data else nan
+    rms_score = rms(y_true - y_pred) if good_data else nan
     
-    return ir2, mape, rms
-
-def mean_quality(qualities, weights):
-    new = quality_class()
-    new.r2 = tl.mean([el.r2 for el in qualities], weights)
-    new.ir2 = tl.mean([el.ir2 for el in qualities], weights)
-    new.mape = tl.mean([el.mape for el in qualities], weights)
-    new.rms = tl.mean([el.rms for el in qualities], weights)
-    new.update_label()
-    return new
+    return r2_score, mape_score, rms_score

@@ -1,5 +1,7 @@
 from forecast.backup import copy_class
-import forecast.tools as tl
+from forecast.string import pad
+import numpy as np
+
 
 class trend_class(copy_class):
     def __init__(self):
@@ -15,18 +17,18 @@ class trend_class(copy_class):
         self.order = order
 
     def set_function(self, function = None):
-        self.function = function if function is not None else tl.none_function
+        self.function = function if function is not None else none_function
         
     def set_data(self, data = None):
-        self.data = tl.np.array(data) if data is not None else None
+        self.data = np.array(data) if data is not None else None
 
     def update_data(self, time):
         data = self.predict(time)
         self.set_data(data)
 
     def fit_function(self, time, values, order):
-        function = tl.get_trend_function(time.index, values.data, order)
-        self.set_function(tl.to_time_function(function))
+        function = get_trend_function(time.index, values.data, order)
+        self.set_function(to_time_function(function))
 
     def fit(self, time, values, order):
         self.fit_function(time, values, order)
@@ -43,7 +45,7 @@ class trend_class(copy_class):
         self.short_label = None if no_label else label
 
     def update_long_label(self, no_label):
-        label = tl.pad("Trend", 11) + str(self.order)
+        label = pad("Trend", 11) + str(self.order)
         self.long_label = None if no_label else label
 
 
@@ -64,7 +66,42 @@ class trend_class(copy_class):
         new = self.copy()
         data = None if self.data is None else self.data * constant
         new.set_data(data)
-        function = tl.none_function if self.function == tl.none_function else (lambda el: self.function(el) * constant)
+        function = none_function if self.function == none_function else (lambda el: self.function(el) * constant)
         new.set_function(function)
         return new
-        
+
+
+# Trend Utilities
+nan = np.nan
+zero_function = lambda el: 0
+none_function = lambda el: None
+to_time_function = lambda function: (lambda time: np.array([function(el) for el in time.index]))
+
+def get_trend_function(x, y, order = 2):
+    if order is None or order is nan or len(x) == 0:
+        return zero_function
+    try:
+        poly = np.polyfit(x, y, deg = order)
+        function = np.poly1d(poly)
+        return function
+    except (RuntimeWarning, np.RankWarning):
+        return nan_function
+
+def map_function(function, data):
+    return np.array(list(map(function, data)))
+
+def get_trend(data, order = 2):
+    x = range(len(data))
+    function = get_trend_function(x, data, order)
+    return map_function(function, x)
+
+remove_trend = lambda data, order = 2: data - get_trend(data, order)
+
+def generate_trend(mean = 100, delta = 10, length = 1000, order = 2, noise = 1):
+    y0 = mean - delta / 2
+    d = abs(noise) * 4
+    poly = np.random.normal(0, d, order - 1) if noise * order != 0 else [0] * (order - 1) 
+    s = sum(poly)
+    poly = [y0] + list(poly) + [delta - s]
+    poly = [poly[i] / length ** i for i in range(order + 1)][ : : -1]
+    return np.polyval(poly, range(length))

@@ -1,32 +1,25 @@
-from forecast.time import time_class
-from forecast.plot import plot_data
-from forecast.quality import quality_class, mean_quality
-import forecast.tools as tl 
 from forecast.backup import backup_class, copy_class
-from forecast.season import season_class, trend_class
-from forecast.season import season_class
+from forecast.plot import plot_class
+from forecast.trend import trend_class, generate_trend
+from forecast.season import season_class, generate_season, find_seasons
 from forecast.prediction import prediction_class
+from forecast.quality import quality_class, is_like_list
 from forecast.values import values_class
-import pandas as pd
 from forecast.study import study_class
-from forecast.predictor import dictionary
 
-# from forecast.split import split_class
-# from forecast.backup import backup_class
+from forecast.string import enclose_circled, nl, enclose_squared, bold, nl, indicator, pad
+from forecast.path import read_time_data, join_paths, output_folder
+from forecast.dictionary import dictionary
 
-def from_csv(path, delimiter = ' ', first_row = 0, length = None, time_col = 0, values_col = 1, form = "%d/%m/%Y"):
-    last_row = first_row + length if length is not None else None
-    matrix = tl.read_data(path, delimiter = delimiter)[first_row : last_row]
-    data = tl.transpose(matrix)
-    time = data[time_col]
-    values = data[values_col]
-    #values = [el * scale for el in values]
-    time = time_class(time, form)
-    values = values_class(values)
-    data = data_class(time, values)
-    return data
+import pandas as pd
+import numpy as np
 
-class data_class(plot_data, backup_class, copy_class):
+def read_data(path, first_row = 0, form = None):
+    time, values = read_time_data(path, first_row, form)
+    return data_class(time, values)
+
+
+class data_class(copy_class, backup_class, plot_class):
     def __init__(self, time = [], values = []):
         self.set_name(); self.set_unit()
         
@@ -54,7 +47,7 @@ class data_class(plot_data, backup_class, copy_class):
         return self.name.title() if self.name is not None else "Data"
 
     def get_unit(self, enclosed = False):
-        return "" if self.unit is None else tl.enclose_squared(self.unit) if enclosed else self.unit
+        return "" if self.unit is None else enclose_squared(self.unit) if enclosed else self.unit
 
     def set_unit(self, unit = None):
         self.unit = unit
@@ -93,7 +86,7 @@ class data_class(plot_data, backup_class, copy_class):
         
         
     def find_seasons(self, detrend = 2, source= "acf", log = True, plot = False, threshold = 1):
-        return tl.find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
+        return find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
         #tl.plt.show(block = 0)
 
     def all_seasons(self, detrend = 2):
@@ -131,6 +124,7 @@ class data_class(plot_data, backup_class, copy_class):
         self.add_predictor(name, dictionary = dictionary)
         self.update_prediction()
 
+    use_auto_arima = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
     use_arima = lambda self, dictionary: self.use_predictor("arima", dictionary)
     use_es = lambda self, dictionary: self.use_predictor("es", dictionary)
     use_uc = lambda self, dictionary: self.use_predictor("uc", dictionary)
@@ -151,18 +145,18 @@ class data_class(plot_data, backup_class, copy_class):
 
     def get_trend(self):
         trend = self._trend.get_data()
-        return trend if tl.is_like_list(trend) else tl.np.array([trend] * self.length)
+        return trend if is_like_list(trend) else np.array([trend] * self.length)
 
     def get_season(self):
         season = self._season.get_data()
-        return season if tl.is_like_list(season) else tl.np.array([season] * self.length)
+        return season if is_like_list(season) else np.array([season] * self.length)
         
     def get_treason(self):
         return self.get_trend() + self.get_season()
 
     def get_background(self):
         yb = self.get_treason() + self._prediction.get_data()
-        self.background_ok = not tl.is_zero(yb)
+        self.background_ok = not is_zero(yb)
         return yb
 
     def get_background_dataframe(self):
@@ -196,14 +190,14 @@ class data_class(plot_data, backup_class, copy_class):
         labels = [str(el) for el in labels if el is not None]
         no_label = len(labels) == 0
         self._short_label = "No Background" if no_label else ' + '.join(labels)
-        residuals_label = self.get_name() + " - " + tl.enclose_circled(self._short_label)
+        residuals_label = self.get_name() + " - " + enclose_circled(self._short_label)
         self._residuals_label = self.get_name() if no_label else residuals_label
 
     def _update_long_label(self):
         labels = [self._trend.long_label, self._season.long_label, self._prediction.long_label]
         labels = [str(el) for el in labels if el is not None]
         no_label = len(labels) == 0
-        self._long_label = "No Background" if no_label else tl.nl.join(labels)
+        self._long_label = "No Background" if no_label else nl.join(labels)
         
     def _update_quality(self):
         y_true, y_pred = self.get_data(), self.get_background()
@@ -229,13 +223,13 @@ class data_class(plot_data, backup_class, copy_class):
         data._update_quality()
         
     def smooth(self, length):
-        return self.set(tl.moving_average(self.get_data(), length))
+        return self.set(moving_average(self.get_data(), length))
 
     def simulate(self, trend = 2, period = 12, noise = 0):
         noise = self._values.std if noise is None else noise
-        trend = tl.generate_trend(self._values.mean, self._values.delta, self.l, trend, 1)
-        season = tl.generate_season(period, self._values.delta / 3, self.l, 2, 1)
-        noise = tl.generate_noise(0, noise, self.l)
+        trend = generate_trend(self._values.mean, self._values.delta, self.l, trend, 1)
+        season = generate_season(period, self._values.delta / 3, self.l, 2, 1)
+        noise = generate_noise(0, noise, self.l)
         self.set(trend + season + noise)
         return self
         
@@ -273,7 +267,7 @@ class data_class(plot_data, backup_class, copy_class):
 
     def split(self, test_length = None, retrain = False):
         test_length = self.test_length if test_length is None else test_length
-        test_length = tl.ratio_to_length(test_length, self.length)
+        test_length = ratio_to_length(test_length, self.length)
         train_length = self.length - test_length
         train, test = self.part(0, train_length, retrain), self.part(train_length, self.length)
         train._project_background_to(test, retrain = False) if retrain else None
@@ -289,7 +283,7 @@ class data_class(plot_data, backup_class, copy_class):
         study.log()
 
     def set(self, data):
-        data = data if tl.is_like_list(data) else [data] * self.length
+        data = data if is_like_list(data) else [data] * self.length
         self._values.set(data)
         self._update_quality()
         return self
@@ -311,8 +305,8 @@ class data_class(plot_data, backup_class, copy_class):
 
     def __str__(self):
         name = "data" if self.name is None else self.name
-        title = tl.colorize(self.get_name() + " Log", "blue+", "bold")
-        return title + tl.nl + self._long_label + tl.nl + str(self._quality)
+        title = bold(self.get_name() + " Log")
+        return title + nl + self._long_label + nl + str(self._quality)
 
     def log(self):
         self._update_label()
@@ -322,7 +316,7 @@ class data_class(plot_data, backup_class, copy_class):
 
     def _get_path(self, name):
         name = name if name is not None else self.name if self.name is not None else "data"
-        path = tl.join_paths(tl.output_folder, name)
+        path = join_paths(output_folder, name)
         return path
 
     def save_background(self, name = None):
@@ -341,7 +335,7 @@ class data_class(plot_data, backup_class, copy_class):
             train, test = data.split(self.test_length, retrain = True)
             study = study_class(data, train, test)
             results.append([argument, study])
-            tl.indicator(i + 1, l) if log else None
+            indicator(i + 1, l) if log else None
 
         results.sort(key = lambda el: el[1].quality)
         result = results[0][0] if len(results) > 0 else None
@@ -352,9 +346,9 @@ class data_class(plot_data, backup_class, copy_class):
             length_label = results[0][1].get_length_string()
             title = results[0][1]._short_label_title
             print(length_label)
-            print("Function", tl.bold(function_name))
+            print("Function", bold(function_name))
             print(spaces + title)
-            [print(tl.pad(argument, arg_length), study._short_label) for (argument, study) in results]
+            [print(pad(argument, arg_length), study._short_label) for (argument, study) in results]
             
         return result
 
@@ -378,6 +372,13 @@ class data_class(plot_data, backup_class, copy_class):
         arguments = dictionary.prophet.all(order)
         return self.find_best(function_name = "use_prophet", arguments = arguments, log = log)
 
-    # def find_cubist(self, order = 10, log = True):
-    #     arguments = dictionary.cubist.all(order)
-    #     return self.find_best(function_name = "use_cubist", arguments = arguments, log = log)
+    def find_cubist(self, order = 10, log = True):
+        arguments = dictionary.cubist.all(order)
+        return self.find_best(function_name = "use_cubist", arguments = arguments, log = log)    
+    
+
+# Data Utils
+is_zero = lambda data: (is_like_list(data) and all(np.array(data) == 0)) or (not is_like_list(data) and data == 0)
+
+generate_noise = lambda mean, amplitude, length: np.random.normal(0, amplitude , length)
+ratio_to_length = lambda ratio, length: length if ratio is None else round(ratio * length) if ratio <= 1 else int(ratio)

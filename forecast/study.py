@@ -1,8 +1,9 @@
-from forecast.tools import bold, pad, nl, percentage, colorize, pad_round
-# from forecast.quality import mean_quality
+from forecast.string import bold, pad, nl, percentage, pad_round
+
 
 sl = 3
 sp = ' ' * sl
+
 
 class study_class():
     def __init__(self, data, train, test):
@@ -78,10 +79,9 @@ class study_class():
         self._long_label = back + length + title + mape + ir2 + rms
 
     def __str__(self):
-        title = colorize(self.get_name().title() + " Log", "red+", "bold")
+        title = bold(self.get_name().title() + " Log")
         return title + nl + self._long_label
         
     def log(self):
         self.update_label()
-        print(self)
-        
+        print(self)    

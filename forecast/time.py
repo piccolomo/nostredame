@@ -1,16 +1,21 @@
 from forecast.backup import copy_class
-
+from forecast.season import transpose
+from forecast.string import strings_to_numbers
 from datetime import datetime as dt
-import numpy as np
 from calendar import monthrange
-import pandas as pd
-from dateutil.relativedelta import relativedelta
 from datetime import timedelta
+
+import numpy as np
+import pandas as pd
+
+# from dateutil.relativedelta import relativedelta
+# from forecast.tools import transpose
+
 
 class time_class(copy_class):
     def __init__(self, data = [], form = None, time0 = None):
-        self.set_form(form)
         self.set(data)
+        self.set_form(form)
         self.set_datetime()
         #self.sort()
         # #self.set_datetime64()
@@ -162,3 +167,24 @@ def add_time(datetime, delta, freq): # it jumps delta steps ahead of datetime wh
     past_days = freq[1] in scales[0:2]
     delta = timedelta(**dictionary) if not past_days else relativedelta(**dictionary)
     return datetime + delta
+
+# Time Forms 
+def single_time_form(data):
+    S = max(map(len, data))
+    data = strings_to_numbers(data)
+    m, M = min(data), max(data)
+    if M >= 99:
+        return "%Y"
+    elif M > 31:
+        return "%y"
+    elif M > 12:
+        return "%d"
+    else:
+        return "%m"
+
+def time_form(data):
+    data = transpose(data)
+    form = [single_time_form(el) for el in data]
+    form = '/'.join(form)
+    return form
+
