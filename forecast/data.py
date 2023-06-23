@@ -8,7 +8,7 @@ from forecast.values import values_class
 from forecast.study import study_class
 
 from forecast.string import enclose_circled, nl, enclose_squared, bold, nl, indicator, pad
-from forecast.path import read_time_data, join_paths, output_folder
+from forecast.path import read_time_data, correct_path, join_paths, output_folder
 from forecast.dictionary import dictionary
 
 import pandas as pd
@@ -317,7 +317,7 @@ class data_class(copy_class, backup_class, plot_class):
     def _get_path(self, name):
         name = name if name is not None else self.name if self.name is not None else "data"
         path = join_paths(output_folder, name)
-        return path
+        return correct_path(path)
 
     def save_background(self, name = None):
         path = self._get_path(name) + ".csv"

@@ -6,7 +6,7 @@ import os
 
 
 # Path Manipulation
-def correct(folder):
+def correct_path(folder):
     folder = os.path.normpath(folder)
     folder = folder.replace("~", user_folder)
     is_relative = folder[ : len(os.sep)] != os.sep 
@@ -14,10 +14,10 @@ def correct(folder):
     return folder
 
 def join_paths(*args): # it join a list of string in a proper file path; if the first argument is ~ it is turnded into the used home folder path
-    return correct(os.path.join(*args))
+    return os.path.join(*args)
 
 def name(path):
-    return os.path.basename(correct(path))
+    return os.path.basename(correct_path(path))
 
 
 # Folders
@@ -32,7 +32,7 @@ os.makedirs(output_folder) if not os.path.exists(output_folder) else None
 
 # Read Files
 def read(path):
-    path = correct(path)
+    path = correct_path(path)
     with open(path, "r") as file:
         text = file.readlines()
     return text

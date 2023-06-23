@@ -81,17 +81,18 @@ def get_screen_size():
             process.close()
             width = screen.split()[7]
             height = screen.split()[9][:-1]
-        elif platform == "window":
-            #process = os.popen("xrandr -q -d :0")
-            process = os.popen("wmic desktopmonitor get screenheight, screenwidth")
+        elif platform == "windows":
+            #process = os.popen("wmic desktopmonitor get screenheight, screenwidth")
+            process = os.popen("wmic PATH Win32_VideoController GET CurrentVerticalResolution,CurrentHorizontalResolution")
             lines = process.readlines()
             process.close()
-            height, width = lines[4].split()
+            #height, width = lines[4].split()
+            width, height = lines[4].split()
         else:
             height, width = None, None
         width, height = int(width), int(height)
     except:
-        print("screen size failed in", platform)
+        print("screen size failed in", platform, ": defaulting to 2560, 1440")
         width, height = 2560, 1440
     return width, height
 
