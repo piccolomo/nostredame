@@ -6,30 +6,46 @@ sp = ' ' * sl
 
 
 class study_class():
-    def __init__(self, data):
+    def __init__(self, data, test_length = None, method = "Data"):
         self.data = data.copy()
         self.set_name()
+        self.set_test_length(test_length)
+        self.set_method(method)
         self.update()
+
+    def set_name(self):
+        self.name = None if self.data.name is None else self.data.name + " study"
+
+    def set_method(self, method):
+        self.method = method if method in ["data", "train", "test", "Data", "average"] else "Data"
+
+    def set_test_length(self, test_length):
+        self.test_length = self.data.test_length if test_length is None else test_length if test_length > 1 else round(test_length * self.data.l)
 
     def update(self):
         self.update_split()
         self.update_quality()
         self.update_label()
 
-    def update_split(self):
-        self.train, self.test = self.data.split(retrain = True)
+    def update_split(self, test_length = None):
+        self.train, self.test = self.data.split(self.test_length, retrain = True)
         self.Data = self.train.append(self.test)
         self.datas = [self.data, self.train, self.test, self.Data]
-
-    def set_name(self):
-        self.name = None if self.data.name is None else self.data.name + " study"
 
     def get_name(self):
         return self.name.title() if self.name is not None else "Study"
 
     def update_quality(self):
-        self.quality = self.test._quality.rms
-        #self.quality = self.test._quality.rms
+        if self.method == "data":
+            self.quality = self.data._quality.rms
+        elif self.method == "train":
+            self.quality = self.train._quality.rms
+        elif self.method == "test":
+            self.quality = self.test._quality.rms
+        elif self.method == "Data":
+            self.quality = self.Data._quality.rms
+        elif self.method == "average":
+            self.quality = 0.5 * self.train._quality.rms + 0.5 * self.test._quality.rms
         
     def update_label(self):
         self._update_label_short()

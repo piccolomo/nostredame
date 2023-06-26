@@ -113,9 +113,9 @@ class data_class(copy_class, backup_class, plot_class):
         trend = self._trend.get_data()
         return trend if is_like_list(trend) else np.array([trend] * self.length)
 
-    def find_trend(self, max_order = 15, log = True):
+    def find_trend(self, max_order = 15, test_length = None, method = "test", log = True):
         arguments = list(range(0, max_order + 1))
-        return self.find_best(function_name = "update_trend", arguments = arguments, log = log)
+        return self.find_best(function_name = "update_trend", arguments = arguments, test_length = test_length, method = method, log = log)
 
     
         
@@ -182,17 +182,17 @@ class data_class(copy_class, backup_class, plot_class):
     use_es_dict = lambda self, dictionary: self.use_predictor("es", dictionary)
     use_es = lambda self, period: self.use_es_dict(dictionary.es.default(period))
     
-    def find_es(self, periods = [], log = True):
+    def find_es(self, periods = [], test_length = None, method = "Data", log = True):
         arguments = dictionary.es.all(periods)
-        es_dict = self.find_best(function_name = "use_es_dict", arguments = arguments, log = log)
+        es_dict = self.find_best(function_name = "use_es_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_es_dict(es_dict)
 
     use_prophet_dict = lambda self, dictionary: self.use_predictor("prophet", dictionary)
     use_prophet = lambda self, seasonality = True, points = 12: self.use_prophet_dict(dictionary.prophet.default(seasonality, points)) 
 
-    def find_prophet(self, order = 10, log = True):
+    def find_prophet(self, order = 10, test_length = None, method = "Data", log = True):
         arguments = dictionary.prophet.all(order)
-        prophet_dict = self.find_best(function_name = "use_prophet_dict", arguments = arguments, log = log)
+        prophet_dict = self.find_best(function_name = "use_prophet_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_prophet_dict(prophet_dict)
 
     use_auto_arima_dict = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
@@ -201,25 +201,25 @@ class data_class(copy_class, backup_class, plot_class):
     use_arima_dict = lambda self, dictionary: self.use_predictor("arima", dictionary)
     use_arima = lambda self, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, m = 12: self.use_arima_dict(dictionary.arima.default(p, d, q, P, D, Q, m))
     
-    def find_arima(self, periods = [], order = 1, log = True):
+    def find_arima(self, periods = [], order = 1, test_length = None, method = "Data", log = True):
         arguments = dictionary.arima.all(periods, order)
-        arima_dict = self.find_best(function_name = "use_arima_dict", arguments = arguments, log = log)
+        arima_dict = self.find_best(function_name = "use_arima_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_arima_dict(arima_dict)
 
     use_uc_dict = lambda self, dictionary: self.use_predictor("uc", dictionary)
     use_uc = lambda self, level = 0, cycle = True, seasonal = 12, autoregressive = 1, stochastic = True: self.use_uc_dict(dictionary.uc.default(level, cycle, seasonal, autoregressive, stochastic))
 
-    def find_uc(self, periods = [], order = 1, log = True):
+    def find_uc(self, periods = [], order = 1, test_length = None, method = "Data", log = True):
         arguments = dictionary.uc.all(periods, order)
-        uc_dict = self.find_best(function_name = "use_uc_dict", arguments = arguments, log = log)
+        uc_dict = self.find_best(function_name = "use_uc_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_uc_dict(uc_dict)
 
     use_cubist_dict = lambda self, dictionary: self.use_predictor("cubist", dictionary)
     use_cubist = lambda self, committees = 0, neighbors = 1, composite = True, unbiased = True: self.use_cubist_dict(dictionary.cubist.default(committees, neighbors, composite, unbiased))
             
-    def find_cubist(self, order = 10, log = True):
+    def find_cubist(self, order = 10, test_length = None, method = "Data", log = True):
         arguments = dictionary.cubist.all(order)
-        cubist_dict = self.find_best(function_name = "use_cubist_dict", arguments = arguments, log = log)    
+        cubist_dict = self.find_best(function_name = "use_cubist_dict", arguments = arguments, test_length = test_length, method = method, log = log)    
         self.use_cubist_dict(cubist_dict)
 
 
@@ -316,7 +316,7 @@ class data_class(copy_class, backup_class, plot_class):
         return self
 
     def log_split(self, test_length = None):
-        study = study_class(self)
+        study = study_class(self, test_length)
         study.log()
         
 
@@ -381,13 +381,13 @@ class data_class(copy_class, backup_class, plot_class):
         new.set_name(self.get_name() + " + " + data.get_name())
         return new
 
-    def find_best(self, function_name, arguments, log = True):
+    def find_best(self, function_name, arguments, test_length = None, method = "Data", log = True):
         data = self.copy()
         results = []
         l = len(arguments)
         for i in range(l):
             argument = arguments[i]
-            study = study_class(data)
+            study = study_class(data, test_length, method)
             #train.zero_background()
             eval("study.data." + function_name + "(argument)")
             study.update()

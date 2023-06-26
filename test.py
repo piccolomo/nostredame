@@ -66,35 +66,35 @@ log = 1
 data.update_trend(0)
 
 # FIND TREND
-trend = data.find_trend(log = log)
-data.update_trend(trend)
+#trend = data.find_trend(method = "test", test_length = None, log = log)
+#data.update_trend(trend)
 
 # MANUAL SEASON
-data.update_season(52, detrend = None)
+#data.update_season(52, detrend = None)
 
 # FIND SEASON -----------
-threshold = 2
-seasons_acf = data.find_seasons(detrend = None, source = "acf", threshold = threshold, plot = 1, log = log)
-seasons_fft = data.find_seasons(detrend = 3, source = "fft", threshold = threshold, plot = 0, log = log)
-seasons = seasons_acf + seasons_fft
-data.update_season(*seasons, detrend = None)
+# threshold = 2
+# seasons_acf = data.find_seasons(detrend = None, source = "acf", threshold = threshold, plot = 1, log = log)
+# seasons_fft = data.find_seasons(detrend = 3, source = "fft", threshold = threshold, plot = 0, log = log)
+# seasons = seasons_acf + seasons_fft
+# data.update_season(*seasons, detrend = None)
 
 # NAIVE -----------
-data.use_naive('zero')
+#data.use_naive('zero')
 
 
 # EXPONENTIAL SMOOTHING 
 #data.use_es(period = 52)
 
 # FIND EXPONENTIAL SMOOTHING 
-es_seasons = data.all_seasons()
-data.find_es(es_seasons, log = log)
+#es_seasons = data.all_seasons()
+#data.find_es(es_seasons, method = "Data", test_length = None, log = log)
 
 # PROPHET
 #data.use_prophet(seasonality = True, points = 5)
 
 # FIND PROPHET
-#data.find_prophet(order = 10, log = log)
+#data.find_prophet(order = 10, method = "Data", test_length = None, log = log)
 
 # AUTO ARIMA
 #data.use_auto_arima(period = 52, max_order = 1)
@@ -104,30 +104,30 @@ data.find_es(es_seasons, log = log)
 
 # FIND ARIMA
 #arima_periods = data.all_seasons(threshold = 2.8)
-#data.find_arima(arima_periods, order = 1, log = log)
+#data.find_arima(arima_periods, method = "Data", test_length = None, order = 1, log = log)
 
 # UNOBSERVED COMPONENTS
 #data.use_uc(level = 0, cycle = True, seasonal = 12, autoregressive = 1, stochastic = True)
 
 # FIND UNOBSERVED COMPONENTS
 #uc_periods = data.all_seasons(threshold = 2.8)
-#data.find_uc(uc_periods, order = 0, log = log)
+#data.find_uc(uc_periods, method = "Data", test_length = None, order = 0, log = log)
 
 # CUBIST
 #data.use_cubist(committees = 1, neighbors = 3, composite = True, unbiased = True)
 
 # FIND CUBIST
-#data.find_cubist(order = 10, log = log)
+data.find_cubist(order = 10, method = "Data", test_length = None, log = log)
 
 # data.log()
-data.log_split()
+data.log_split(0.2)
 data.plot()
 
-f = data.forecast()
-f.plot()
-f.save_plot(log = log)
-f.save_background(log = log)
+# f = data.forecast()
+# f.plot()
+# f.save_plot(log = log)
+# f.save_background(log = log)
 
-e = data.extend()
-e.plot()
-e.save_plot()
+# e = data.extend()
+# e.plot()
+# e.save_plot()
