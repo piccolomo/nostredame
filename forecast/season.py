@@ -1,4 +1,4 @@
-from forecast.trend import trend_class, remove_trend, to_time_function
+from forecast.trend import trend_class, remove_trend, to_time_function, generate_trend
 from forecast.string import pad, enclose_circled, bold, str_round
 from forecast.plot import get_acf, get_fft_inter, plt, set_plot_size
 from scipy.signal import find_peaks 
@@ -149,3 +149,6 @@ def generate_season(period, amplitude, length, order = 4, noise = 1):
     signal = [generate_trend(0, amplitude, period, order, noise)] * repeat
     signal = flatten(signal)
     return np.array(signal[ : length])
+
+def flatten(matrix): # flatten lists at first level
+    return [el for row in matrix for el in row]

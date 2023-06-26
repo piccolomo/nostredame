@@ -243,10 +243,9 @@ class data_class(copy_class, backup_class, plot_class):
     def smooth(self, length):
         return self.set(moving_average(self.get_data(), length))
 
-    def simulate(self, trend = 2, period = 12, noise = 0):
-        noise = self._values.std if noise is None else noise
-        trend = generate_trend(self._values.mean, self._values.delta, self.l, trend, 1)
-        season = generate_season(period, self._values.delta / 3, self.l, 2, 1)
+    def simulate(self, trend = 0, period = 12, noise = 0.1):
+        season = generate_season(period, self._values.delta / 3, self.l, trend, noise)
+        trend = generate_trend(self._values.mean, self._values.delta, self.l, trend, noise)
         noise = generate_noise(0, noise, self.l)
         self.set(trend + season + noise)
         return self

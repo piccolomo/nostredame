@@ -60,7 +60,7 @@ log = 1
 
 
 # SIMULATE
-# data.simulate(period = 50).plot()
+data.simulate(trend = 10, period = 10, noise = 2).plot()
 
 # MANUAL TREND
 data.update_trend(0)
@@ -100,7 +100,7 @@ data.update_season(52, detrend = None)
 #data.use_auto_arima(period = 52, max_order = 1)
 
 # ARIMA
-data.use_arima(0,1,1, 1,0,0, 52)
+#data.use_arima(0,1,1, 1,0,0, 52)
 
 # FIND ARIMA
 #arima_periods = data.all_seasons(threshold = 2.8)
@@ -119,15 +119,15 @@ data.use_arima(0,1,1, 1,0,0, 52)
 # FIND CUBIST
 #data.find_cubist(order = 10, log = log)
 
-data.log()
-data.log_split()
-data.plot()
+# data.log()
+# data.log_split()
+# data.plot()
 
-f = data.forecast()
-f.plot()
-f.save_plot(log = log)
-f.save_background(log = log)
+# f = data.forecast()
+# f.plot()
+# f.save_plot(log = log)
+# f.save_background(log = log)
 
-e = data.extend()
-e.plot()
-e.save_plot()
+# e = data.extend()
+# e.plot()
+# e.save_plot()
