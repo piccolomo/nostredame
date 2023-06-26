@@ -6,16 +6,20 @@ sp = ' ' * sl
 
 
 class study_class():
-    def __init__(self, data, train, test):
-        self.data = data
-        self.train, self.test = train, test
-        self.Data = train.append(test)
-        
-        self.datas = [self.data, self.train, self.test, self.Data]
-
+    def __init__(self, data):
+        self.data = data.copy()
         self.set_name()
+        self.update()
+
+    def update(self):
+        self.update_split()
         self.update_quality()
         self.update_label()
+
+    def update_split(self):
+        self.train, self.test = self.data.split(retrain = True)
+        self.Data = self.train.append(self.test)
+        self.datas = [self.data, self.train, self.test, self.Data]
 
     def set_name(self):
         self.name = None if self.data.name is None else self.data.name + " study"
@@ -24,7 +28,7 @@ class study_class():
         return self.name.title() if self.name is not None else "Study"
 
     def update_quality(self):
-        self.quality = self.Data._quality.rms
+        self.quality = self.test._quality.rms
         #self.quality = self.test._quality.rms
         
     def update_label(self):
@@ -42,12 +46,14 @@ class study_class():
         rms = bold('rms') + sp + self.get_rms_string(rms_length) + ' ' + self.data.get_unit(True)
         rms_title = ' ' * (3 + sl) + self.get_title_string(rms_length)
 
-        self._short_label_title = mape_title + ir2_title + rms_title
-        self._short_label = mape + ir2 + rms
+        #self._short_label_title = mape_title + ir2_title + rms_title
+        self._short_label_title = rms_title
+        #self._short_label = mape + ir2 + rms
+        self._short_label = rms
 
     def get_length_string(self):
         train_length, test_length = percentage(self.train.l, self.data.l), percentage(self.test.l, self.data.l)
-        return "Length Train / Test = " + pad_round(train_length, 5) + " / " + pad_round(test_length, 5) + " % = " + str(self.train.l) + " / " + str(self.test.l)
+        return "Test Split Ratio: " + pad_round(test_length, 5)# + "% = " + str(self.test.l)
 
     def get_title_string(self, pad_length = 6):
         datas = ["data",  "Train", "Test", "Data"]

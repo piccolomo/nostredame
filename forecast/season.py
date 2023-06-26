@@ -1,6 +1,6 @@
 from forecast.trend import trend_class, remove_trend, to_time_function
 from forecast.string import pad, enclose_circled, bold, str_round
-from forecast.plot import get_acf, get_fft_inter
+from forecast.plot import get_acf, get_fft_inter, plt, set_plot_size
 from scipy.signal import find_peaks 
 import numpy as np
 
@@ -93,7 +93,7 @@ def get_peaks(data, threshold = 1, order = 1):
     #relative_prominences = 100 * (prominences - std) / (M - m)
     return sorted(zip(positions, heights, prominences), key = lambda tuple: tuple[order], reverse = 1)
 
-def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = True, threshold = 1):
+def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = True, threshold = 2.5):
     #print("Detrend Order", detrend_order, nl) if log else None
     #log += plot
     proceed_manually = (plot == 1)
@@ -122,7 +122,7 @@ def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = 
         for i in range(lp):
             period =  bold(pad(str(periods[i]), 3))
             height =  pad(str_round(heights[i], 1), 3)
-            print(bold("Period"), period, "height", height, "[std]", source)
+            print("period", bold(period), "height", height, "[std] from", source)
     if log and lp == 0:
         print("no peaks found: see ya!") if log else None
 

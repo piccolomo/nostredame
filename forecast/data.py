@@ -86,7 +86,8 @@ class data_class(copy_class, backup_class, plot_class):
         self._trend.zero()
         
         
-    def find_seasons(self, detrend = 2, source= "acf", log = True, plot = False, threshold = 1):
+    def find_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5):
+        detrend = self._trend.order + 1 if detrend is None and self._trend.order is not None else detrend
         return find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
         #tl.plt.show(block = 0)
 
@@ -96,6 +97,7 @@ class data_class(copy_class, backup_class, plot_class):
         return list(set(acf + fft))
         
     def update_season(self, *periods, detrend = None):
+        detrend = self._trend.order  if detrend is None and self._trend.order is not None else detrend
         self.fit_season(*periods, detrend = detrend)
         self._update_season_data()
         
@@ -125,9 +127,9 @@ class data_class(copy_class, backup_class, plot_class):
         self.add_predictor(name, dictionary = dictionary)
         self.update_prediction()
 
+    use_es = lambda self, dictionary: self.use_predictor("es", dictionary)
     use_auto_arima = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
     use_arima = lambda self, dictionary: self.use_predictor("arima", dictionary)
-    use_es = lambda self, dictionary: self.use_predictor("es", dictionary)
     use_uc = lambda self, dictionary: self.use_predictor("uc", dictionary)
     use_prophet = lambda self, dictionary: self.use_predictor("prophet", dictionary)
     use_cubist = lambda self, dictionary: self.use_predictor("cubist", dictionary)
@@ -331,10 +333,10 @@ class data_class(copy_class, backup_class, plot_class):
         l = len(arguments)
         for i in range(l):
             argument = arguments[i]
+            study = study_class(data)
             #train.zero_background()
-            eval("data." + function_name + "(argument)")
-            train, test = data.split(self.test_length, retrain = True)
-            study = study_class(data, train, test)
+            eval("study.data." + function_name + "(argument)")
+            study.update()
             results.append([argument, study])
             indicator(i + 1, l) if log else None
 
@@ -346,32 +348,32 @@ class data_class(copy_class, backup_class, plot_class):
             spaces = ' ' * (arg_length + 1)
             length_label = results[0][1].get_length_string()
             title = results[0][1]._short_label_title
-            print(length_label)
             print("Function", bold(function_name))
+            print(length_label)
             print(spaces + title)
             [print(pad(argument, arg_length), study._short_label) for (argument, study) in results]
             
         return result
 
-    def find_trend(self, max_order = 10, log = True):
+    def find_trend(self, max_order = 15, log = True):
         arguments = list(range(0, max_order + 1))
         return self.find_best(function_name = "update_trend", arguments = arguments, log = log)
-
-    def find_arima(self, periods = [], order = 1, log = True):
-        arguments = dictionary.arima.all(periods, order)
-        return self.find_best(function_name = "use_arima", arguments = arguments, log = log)
 
     def find_es(self, periods = [], log = True):
         arguments = dictionary.es.all(periods)
         return self.find_best(function_name = "use_es", arguments = arguments, log = log)
 
-    def find_uc(self, periods = [], order = 1, log = True):
-        arguments = dictionary.uc.all(periods, order)
-        return self.find_best(function_name = "use_uc", arguments = arguments, log = log)
-
     def find_prophet(self, order = 10, log = True):
         arguments = dictionary.prophet.all(order)
         return self.find_best(function_name = "use_prophet", arguments = arguments, log = log)
+
+    def find_arima(self, periods = [], order = 1, log = True):
+        arguments = dictionary.arima.all(periods, order)
+        return self.find_best(function_name = "use_arima", arguments = arguments, log = log)
+
+    def find_uc(self, periods = [], order = 1, log = True):
+        arguments = dictionary.uc.all(periods, order)
+        return self.find_best(function_name = "use_uc", arguments = arguments, log = log)
 
     def find_cubist(self, order = 10, log = True):
         arguments = dictionary.cubist.all(order)

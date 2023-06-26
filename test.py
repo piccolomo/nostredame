@@ -54,23 +54,39 @@ data = fr.read_data(name, header = 0)
 data.set_name("weekly repairs plu").set_unit("repairs")
 data.set_forecast_length(12)
 
-# #data.simulate(period = 50).plot()
+
+# SETTINGS
+data.backup()
+log = 1
 
 
-# data.backup()
+# SIMULATE
+# data.simulate(period = 50).plot()
 
-# log = 1
 
-# trend = data.find_trend(10)
+# MANUAL TREND
+data.update_trend(0)
+
+
+# FIND TREND
+# trend = data.find_trend()
 # data.update_trend(trend)
-# #data.update_trend(2)
 
-# threshold = 3
-# seasons_acf = data.find_seasons(detrend = 3, source = "acf", threshold = threshold, plot = 0, log = log)
+
+# MANUAL SEASON
+# data.update_season(52, detrend = None)
+
+
+# ---------- SEASON -----------
+# threshold = 2
+# seasons_acf = data.find_seasons(detrend = None, source = "acf", threshold = threshold, plot = 1, log = log)
 # seasons_fft = data.find_seasons(detrend = 3, source = "fft", threshold = threshold, plot = 0, log = log)
 # seasons = seasons_acf + seasons_fft
-# data.update_season(*seasons, detrend = 3)
-# #data.update_season(52, 7, detrend = 3)
+# data.update_season(*seasons, detrend = None)
+
+
+# ---------- ES -----------
+
 
 # #es_seasons = list(range(data.l))
 # #es_seasons = data.all_seasons(detrend = 3)
@@ -95,9 +111,9 @@ data.set_forecast_length(12)
 # #data.use_arima(fr.dictionary.arima.default(0, 1, 1, 0, 1, 0, 12))
 # #data.use_uc(fr.dictionary.uc.default(fr.uc_levels[1], True, 52, True, False))
 
-# data.log()
+data.log()
 # data.log_split()
-data.plot()
+#data.plot()
 
 # f = data.forecast()
 # f.plot()
