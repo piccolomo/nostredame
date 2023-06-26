@@ -14,8 +14,9 @@ from forecast.dictionary import dictionary
 import pandas as pd
 import numpy as np
 
-def read_data(path, first_row = 0, form = None):
-    time, values = read_time_data(path, first_row, form)
+
+def read_data(path, header = True, form = None):
+    time, values = read_time_data(path, header, form)
     return data_class(time, values)
 
 

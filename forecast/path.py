@@ -51,9 +51,9 @@ def read_data(path): # it turns a text file into data lists
     data = [get_numerical(el) for el in text]
     return data
 
-def read_time_data(path, first_row = 0, form = None):
+def read_time_data(path, header = True, form = None):
     data = read_data(path)
-    data = data[first_row : ]
+    data = data[1 - header : ]
     values = [el[-1] for el in data]
     time = [el[:-1][:3] for el in data]
     values = strings_to_numbers(values)

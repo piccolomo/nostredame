@@ -173,18 +173,20 @@ def single_time_form(data):
     S = max(map(len, data))
     data = strings_to_numbers(data)
     m, M = min(data), max(data)
-    if M >= 99:
-        return "%Y"
-    elif M > 31:
-        return "%y"
-    elif M > 12:
-        return "%d"
-    else:
-        return "%m"
+    pos = 'dmY'
+    pos = pos.replace('d', '') if M > 31 else pos
+    pos = pos.replace('m', '') if M > 12 else pos
+    pos = pos.replace('Y', '') if S < 4  else pos
+
+    pos = 'd' if M in [30, 31] else pos
+    pos = 'm' if M == 12 else pos
+    return pos
 
 def time_form(data):
     data = transpose(data)
     form = [single_time_form(el) for el in data]
-    form = '/'.join(form)
-    return form
+    certain_forms = [el for el in form if len(el) == 1]
+    form = [el if len(el) == 1 else ''.join([ch for ch in el if ch not in certain_forms]) for el in form]
+    form = ['%' + el for el in form]
+    return '/'.join(form)
 
