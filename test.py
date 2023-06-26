@@ -49,7 +49,7 @@ import plotext as plx
 
 name = "plu.csv"
 data = fr.read_data(name, header = 0)
-#data.set_name("weekly repairs plu").set_unit("repairs")
+data.set_name("weekly repairs plu").set_unit("repairs")
 data.set_forecast_length(12)
 
 
@@ -120,14 +120,14 @@ data.use_arima(0,1,1, 1,0,0, 52)
 #data.find_cubist(order = 10, log = log)
 
 data.log()
-# data.log_split()
+data.log_split()
 data.plot()
 
-# f = data.forecast()
-# f.plot()
-# #f.save_plot()
-# f.save_background()
+f = data.forecast()
+f.plot()
+f.save_plot(log = log)
+f.save_background(log = log)
 
-# e = data.extend()
-# e.plot()
-# e.save_plot()
+e = data.extend()
+e.plot()
+e.save_plot()

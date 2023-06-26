@@ -64,10 +64,11 @@ class plot_class():
         show()
         return self
 
-    def save_plot(self, name = None):
+    def save_plot(self, name = None, log = True):
         path = self._get_path(name) + ".jpg"
         #sleep(0.5)
         plt.savefig(path)
+        print("plot saved in", path) if log else None
 
         
 # Plot Utilities

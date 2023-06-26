@@ -257,7 +257,7 @@ class data_class(copy_class, backup_class, plot_class):
         values = self._values.forecast(length)
         data = data_class(time, values)
         self._project_background_to(data)
-        name = ' '.join([el for el in [self.name, "forecasted"] if el is not None])
+        name = self.get_name() + " forecasted" + enclose_circled(length)
         data.set_name(name)
         return data    
         
@@ -272,7 +272,7 @@ class data_class(copy_class, backup_class, plot_class):
     def extend(self, length = None):
         length = self.forecast_length if length is None else length
         data = self.append(self.forecast(length))
-        name = ' '.join([el for el in [self.name, "extended"] if el is not None])
+        name = self.get_name() + " extended" + enclose_circled(length)
         data.set_name(name)
         return data
 
@@ -296,8 +296,7 @@ class data_class(copy_class, backup_class, plot_class):
         return train, test
 
     def log_split(self, test_length = None):
-        train, test = self.split(test_length)
-        study = study_class(self, train, test)
+        study = study_class(self)
         study.log()
 
     def set(self, data):
@@ -334,12 +333,14 @@ class data_class(copy_class, backup_class, plot_class):
 
     def _get_path(self, name):
         name = name if name is not None else self.name if self.name is not None else "data"
+        name = name.lower().replace(' ', '-')
         path = join_paths(output_folder, name)
         return correct_path(path)
 
-    def save_background(self, name = None):
+    def save_background(self, name = None, log = True):
         path = self._get_path(name) + ".csv"
         self.get_background_dataframe().to_csv(path_or_buf = path, header = False)
+        print("background saved in", path) if log else None
 
 
     def find_best(self, function_name, arguments, log = True):

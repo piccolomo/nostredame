@@ -75,14 +75,14 @@ class study_class():
         return rms
         
     def _update_long_label(self):
-        back = self.data._long_label + nl
+        #back = self.data._label_long + nl
         length = self.get_length_string() + nl
         rms_length = self.data._values.pad_length
         title = ' ' * (4 + sl) +  self.get_title_string(rms_length) + nl
         mape = bold('mape') + sp + self.get_mape_string(rms_length) + ' [%]' + sp + nl
         ir2 = bold('ir2 ') + sp + self.get_ir2_string(rms_length) + ' [%]' + sp + nl
         rms = bold('rms ') + sp + self.get_rms_string(rms_length) + ' ' + self.data.get_unit(True)
-        self._long_label = back + length + title + mape + ir2 + rms
+        self._long_label = length + title + mape + ir2 + rms
 
     def __str__(self):
         title = bold(self.get_name().title() + " Log")
