@@ -52,21 +52,21 @@ class total_predictor_class():
     def update_label(self):
         self.update_labels()
         no_label = len(self.active_predictors) == 0
-        self.update_short_label(no_label)
-        self.update_long_label(no_label)
+        self.update_label_short(no_label)
+        self.update_label_long(no_label)
         
     def update_labels(self):
         [el.update_label() for el in self.predictors]
         
-    def update_short_label(self, no_label):
-        labels = [pred.short_label for pred in self.active_predictors]
-        self.short_label = None if no_label else ' + '.join(labels)
+    def update_label_short(self, no_label):
+        labels = [pred.label_short for pred in self.active_predictors]
+        self.label_short = None if no_label else ' + '.join(labels)
     
-    def update_long_label(self, no_label):
+    def update_label_long(self, no_label):
         l = len(self.active_predictors)
-        labels = [pred.long_label for pred in self.active_predictors]
+        labels = [pred.label_long for pred in self.active_predictors]
         labels = [self.relative_weights[i] + labels[i] for i in range(l)]
-        self.long_label = None if no_label else pad('Predictor', 11) + ' + '.join(labels)
+        self.label_long = None if no_label else pad('Predictor', 11) + ' + '.join(labels)
 
     def add_predictor(self, name, dictionary, weight):
         if weight == 0:
@@ -171,17 +171,19 @@ class predictor_class(copy_class):
         self.status = status # -1 = Failed, 0 = Non Fitted, 1 = Fitted
 
     def update_label(self):
-        self.update_short_label()
-        self.update_long_label()
+        self.update_label_short()
+        self.update_label_long()
 
-    def update_short_label(self):
-        self.short_label = self.name.title()
+    def update_label_short(self):
+        arguments = map(str, self.dictionary.values())
+        arguments = ', '.join(arguments)
+        self.label_short = self.name.title() + enclose_circled(arguments)
         
-    def update_long_label(self):
+    def update_label_long(self):
         status = "Failed " if self.status == -1 else "Non Fitted " if self.status == 0 else ""
         dictionary = dictionary_to_string(self.dictionary) if self.dictionary is not None else ""
         dictionary = enclose_circled(dictionary)
-        self.long_label = status + self.name.title() + dictionary
+        self.label_long = status + self.name.title() + dictionary
 
     def get_dataframe(self, time, values):
         return pd.DataFrame(index = time.pandas_index, data = {'values': values.data})

@@ -1,5 +1,5 @@
 from forecast.backup import copy_class
-from forecast.string import pad
+from forecast.string import pad, enclose_circled
 import numpy as np
 
 
@@ -37,16 +37,16 @@ class trend_class(copy_class):
         
     def update_label(self):
         no_label = self.order is None
-        self.update_short_label(no_label)
-        self.update_long_label(no_label)
+        self.update_label_short(no_label)
+        self.update_label_long(no_label)
         
-    def update_short_label(self, no_label):
-        label = "Trend"
-        self.short_label = None if no_label else label
+    def update_label_short(self, no_label):
+        label = "Trend" + enclose_circled(self.order)
+        self.label_short = None if no_label else label
 
-    def update_long_label(self, no_label):
+    def update_label_long(self, no_label):
         label = pad("Trend", 11) + str(self.order)
-        self.long_label = None if no_label else label
+        self.label_long = None if no_label else label
 
 
     def get_data(self):

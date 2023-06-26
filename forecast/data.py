@@ -201,22 +201,21 @@ class data_class(copy_class, backup_class, plot_class):
         
     def _update_label(self):
         self._trend.update_label(); self._season.update_label(); self._prediction.update_label();
-        self._update_short_label()
-        self._update_long_label()
+        self._update_label_short()
+        self._update_label_long()
         
-    def _update_short_label(self):
-        labels = [self._trend.short_label, self._season.short_label, self._prediction.short_label]
+    def _update_label_short(self):
+        labels = [self._trend.label_short, self._season.label_short, self._prediction.label_short]
         labels = [str(el) for el in labels if el is not None]
         no_label = len(labels) == 0
-        self._short_label = "No Background" if no_label else ' + '.join(labels)
-        residuals_label = self.get_name() + " - " + enclose_circled(self._short_label)
-        self._residuals_label = self.get_name() if no_label else residuals_label
+        self._label_short = "No Background" if no_label else ' + '.join(labels)
+        self._residuals_label = self.get_name().lower() if no_label else self.get_name() + ' - background'
 
-    def _update_long_label(self):
-        labels = [self._trend.long_label, self._season.long_label, self._prediction.long_label]
+    def _update_label_long(self):
+        labels = [self._trend.label_long, self._season.label_long, self._prediction.label_long]
         labels = [str(el) for el in labels if el is not None]
         no_label = len(labels) == 0
-        self._long_label = "No Background" if no_label else nl.join(labels)
+        self._label_long = "No Background" if no_label else nl.join(labels)
         
     def _update_quality(self):
         y_true, y_pred = self.get_data(), self.get_background()
@@ -325,7 +324,7 @@ class data_class(copy_class, backup_class, plot_class):
     def __str__(self):
         name = "data" if self.name is None else self.name
         title = bold(self.get_name() + " Log")
-        return title + nl + self._long_label + nl + str(self._quality)
+        return title + nl + self._label_long + nl + str(self._quality)
 
     def log(self):
         self._update_label()
@@ -363,11 +362,11 @@ class data_class(copy_class, backup_class, plot_class):
             arg_length = max([len(str(arg)) for arg in arguments])
             spaces = ' ' * (arg_length + 1)
             length_label = results[0][1].get_length_string()
-            title = results[0][1]._short_label_title
+            title = results[0][1]._label_short_title
             print("Function", bold(function_name))
             print(length_label)
             print(spaces + title)
-            [print(pad(argument, arg_length), study._short_label) for (argument, study) in results]
+            [print(pad(argument, arg_length), study._label_short) for (argument, study) in results]
             
         return result
 

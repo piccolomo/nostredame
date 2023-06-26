@@ -31,15 +31,13 @@ class plot_class():
         unit = enclose_squared(self.get_unit())
         xlabel = "Time" #+ enclose(self.time.form.replace('%', ''))
         ylabel = name + " " + unit
-        title = "Data" if self.name is None else self.name.title()
 
         plt.clf()
-        plt.plot(x, y, c = color_data, lw = width_data, label = self.name)
-        plt.plot(x, yb, c = color_back, lw = width_back, label = self._short_label) if self.background_ok else None
+        plt.plot(x, y, c = color_data, lw = width_data, label = name)
+        plt.plot(x, yb, c = color_back, lw = width_back, label = self._label_short) if self.background_ok else None
 
-        plt.xlabel(xlabel)
         plt.ylabel(ylabel)
-        plt.title(title)
+        plt.title(name)
 
         plt.legend()
         show()
@@ -50,8 +48,8 @@ class plot_class():
         plt.clf()
         plt.plot(get_acf(self.get_residuals()), c = color_data, lw = width_data)
         plt.xlabel("Period")
-        plt.ylabel("ACF")
-        plt.title("Autocorrelation Plot of " + self._residuals_label)
+        #plt.ylabel("ACF")
+        plt.title("Autocorrelation Plot of " + self._residuals_label.title())
         show()
         return self
 
@@ -61,8 +59,8 @@ class plot_class():
         plt.plot(get_fft_inter(self.get_residuals()), c = color_data, lw = width_data)
         #plt.yscale("log")
         plt.xlabel("Period")
-        plt.ylabel("FFT")
-        plt.title("Fourier Plot of " + self._residuals_label)
+        #plt.ylabel("FFT")
+        plt.title("Fourier Plot of " + self._residuals_label.title())
         show()
         return self
 

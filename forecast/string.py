@@ -49,7 +49,7 @@ def pad_round(num, length = 6, level = 2):
    return string
 
 def dictionary_to_string(dictionary):
-    rounding = lambda el: el if isinstance(el, str) or is_like_list(el) else round(el, 2)
+    rounding = lambda el: el if isinstance(el, str) or isinstance(el, bool) or is_like_list(el) else round(el, 2)
     dictionary = {el: rounding(dictionary[el]) for el in dictionary}
     return str(dictionary)
 

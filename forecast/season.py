@@ -33,14 +33,14 @@ class season_class(trend_class):
 
     def update_label(self):
         no_label = self.periods is None or len(self.periods) == 0
-        self.update_short_label(no_label)
-        self.update_long_label(no_label)
+        self.update_label_short(no_label)
+        self.update_label_long(no_label)
         
-    def update_short_label(self, no_label):
-        label = "Season"
-        self.short_label = None if no_label else label
+    def update_label_short(self, no_label):
+        label = "Season" + enclose_circled(', '.join(map(str,self.periods)))
+        self.label_short = None if no_label else label
 
-    def update_long_label(self, no_label):
+    def update_label_long(self, no_label):
         periods = list(map(str, self.periods))
         single_period = len(self.periods) == 1
         periods_string = "period = " if single_period else "periods = "
@@ -48,7 +48,7 @@ class season_class(trend_class):
         periods = periods_string + periods_list
         detrend = "detrend = " + str(self.order)
         label = pad("Season", 11) + periods + ", " + detrend
-        self.long_label = None if no_label else label
+        self.label_long = None if no_label else label
 
     def project(self, time):
         new = self.copy()

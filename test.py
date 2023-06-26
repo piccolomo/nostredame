@@ -1,8 +1,6 @@
 import forecast as fr
 import plotext as plx
 
-#fr.simple_print(0)
-
 # name = "repairs"
 # data = fr.read_data(name)
 # data.set_name("weekly repairs")
@@ -51,11 +49,12 @@ import plotext as plx
 
 name = "plu.csv"
 data = fr.read_data(name, header = 0)
-data.set_name("weekly repairs plu").set_unit("repairs")
+#data.set_name("weekly repairs plu").set_unit("repairs")
 data.set_forecast_length(12)
 
 
 # SETTINGS
+fr.simple_print(0)
 data.backup()
 log = 1
 
@@ -71,7 +70,7 @@ data.update_trend(0)
 # data.update_trend(trend)
 
 # MANUAL SEASON
-# data.update_season(52, detrend = None)
+data.update_season(52, detrend = None)
 
 # FIND SEASON -----------
 # threshold = 2
@@ -101,7 +100,7 @@ data.update_trend(0)
 #data.use_auto_arima(period = 52, max_order = 1)
 
 # ARIMA
-#data.use_arima(0,1,1, 1,0,0, 52)
+data.use_arima(0,1,1, 1,0,0, 52)
 
 # FIND ARIMA
 #arima_periods = data.all_seasons(threshold = 2.8)
