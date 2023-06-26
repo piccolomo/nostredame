@@ -24,31 +24,27 @@ class naive_dictionaries():
 
 
 class auto_arima_dictionaries():
-    def default(self, m = 1, max_order = 2):
-        return {"m": m, "max_order": max_order}
-    
-    def all(self, periods, order = 5):
-        return [self.default(m, max_order) for m in periods for max_order in range(order + 1)]
+    def default(self, period = 1, order = 2):
+        return {"m": period, "max_order": order}
 
-    def random(self):
-        return choice(self.all())
-
+get_range = lambda order: list(range(0, order + 1))
+B = [True, False]
   
 class arima_dictionaries():
-    def default(self, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, s = 12):
-        return {"order": (p, d, q), "seasonal_order": (P, D, Q, s)} 
+    def default(self, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, m = 12):
+        return {"order": (p, d, q), "seasonal_order": (P, D, Q, m)} 
     
     def all(self, periods, order = 2):
-        data = list(range(0, order + 1))
-        return [self.default(p, d, q, P, D, Q, s) for p in data for d in data for q in data for P in data for D in data for Q in data for s in periods]
+        data = get_range(order)
+        return [self.default(p, d, q, P, D, Q, m) for p in data for d in data for q in data for P in data for D in data for Q in data for m in periods]
 
     def random(self, periods, order = 2):
         return choice(self.all(periods, order))
 
 
 class es_dictionaries():
-    def default(self, p = 12):
-        return {"seasonal_periods": p, "seasonal": "add"}
+    def default(self, period = 12):
+        return {"seasonal_periods": period, "seasonal": "add"}
     
     def all(self, periods):
         return [self.default(p) for p in periods]
@@ -61,40 +57,38 @@ class uc_dictionaries():
     def __init__(self):
         self.levels = ['random walk', 'local linear trend', 'smooth trend', 'local level', 'deterministic constant', 'deterministic trend', "fixed intercept", "fixed slope", "local linear deterministic trend", "ntrend", 'random trend', 'random walk with drift']
 
-    def default(self, l = 'random walk', c = True, s = 12, a = 1, sc = True):
-        return {'level': l, 'cycle': c, 'seasonal': s, 'autoregressive': a, 'stochastic_cycle': sc}
+    def default(self, level = 0, cycle = True, seasonal = 12, autoregressive = 1, stochastic = True):
+        return {'level': self.levels[level], 'cycle': cycle, 'seasonal': seasonal, 'autoregressive': autoregressive, 'stochastic_cycle': stochastic}
         
     def all(self, periods, order = 2):
-        A = list(range(0, order + 1))
-        C = [True, False]
-        return [self.default(l, c, s, a, sc) for l in self.levels for c in C for s in periods for a in A for sc in C]
+        levels = range(len(self.levels))
+        A = get_range(order)
+        return [self.default(l, c, s, a, sc) for l in levels for c in B for s in periods for a in A for sc in B]
 
     def random(self, periods, order = 2):
         return choice(self.all(periods, order))
 
 
 class prophet_dictionaries():
-    def default(self, y = True, n = 12):
-        return {"yearly_seasonality": y, "n_changepoints": n}
+    def default(self, seasonality = True, points = 12):
+        return {"yearly_seasonality": y, "n_changepoints": points}
     
     def all(self, order = 10):
-        Y = [True, False]
-        N = list(range(0, order + 1))
-        return [self.default(y, n) for y in Y for n in N]
+        N = get_range(order)
+        return [self.default(y, n) for y in B for n in N]
 
     def random(self, order = 10):
         return choice(self.all(order))
 
     
 class cubist_dictionaries():
-    def default(self, nc = 0, n = 1, c = True, u = True):
+    def default(self, committees = 0, neighbors = 1, composite = True, unbiased = True):
         return {"n_committees": nc, "neighbors": n, "composite": c, "unbiased": u} 
         
     def all(self, order = 10):
-        NC = list(range(0, order + 1))
+        NC = get_range(order)
         N = range(1, 9)
-        C = [True, False]
-        return [self.default(nc, n, c, u) for nc in NC for n in N for c in C for u in C]
+        return [self.default(nc, n, c, u) for nc in NC for n in N for c in B for u in C]
 
     def random(self, order = 10):
         return choice(self.all(order))

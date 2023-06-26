@@ -12,7 +12,7 @@ setup(
     author = "Savino Piccolomo",
     author_email = "piccolomo@gmail.com",
     name = 'forecast',
-    version='1.1.5',
+    version='1.1.6',
     description = 'forecasts',
     #long_description = README,
     #long_description_content_type = "text/markdown",  
