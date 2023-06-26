@@ -119,10 +119,11 @@ def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = 
     periods = [el + lower for el in periods]
 
     if log:
+        print(bold("searching seasons") + " in " + source)
         for i in range(lp):
             period =  bold(pad(str(periods[i]), 3))
             height =  pad(str_round(heights[i], 1), 3)
-            print("period", bold(period), "height", height, "[std] from", source)
+            print("period", bold(period), "height", height, "[stds]")
     if log and lp == 0:
         print("no peaks found: see ya!") if log else None
 

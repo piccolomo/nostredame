@@ -19,6 +19,10 @@ warnings.filterwarnings("error")
 warnings.filterwarnings(action = "ignore", message = "unclosed", category = ResourceWarning)
 warnings.filterwarnings(action = "ignore", category = ConvergenceWarning) # for a rare arima warning
 
+import logging # to suppress prophet log
+logging.getLogger("prophet").setLevel(logging.WARNING)
+logging.getLogger("cmdstanpy").disabled = True
+
 import numpy as np
 import pandas as pd
 
@@ -306,7 +310,7 @@ class cubist_predictor(predictor_class):
 
 # Utilities
 is_constant = lambda data: len(data) == 0 or all([el == data[0] for el in data[1:]])
-            
+zero = lambda length: np.full(length, 0)
 
 
 

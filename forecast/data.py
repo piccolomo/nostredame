@@ -91,9 +91,9 @@ class data_class(copy_class, backup_class, plot_class):
         return find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
         #tl.plt.show(block = 0)
 
-    def all_seasons(self, detrend = 2):
-        acf = self.find_seasons(detrend = detrend, source = "acf", log = False, threshold = 1)
-        fft = self.find_seasons(detrend = detrend, source = "fft", log = False, threshold = 1)
+    def all_seasons(self, detrend = None, threshold = 1):
+        acf = self.find_seasons(detrend = detrend, source = "acf", log = False, threshold = threshold)
+        fft = self.find_seasons(detrend = detrend, source = "fft", log = False, threshold = threshold)
         return list(set(acf + fft))
         
     def update_season(self, *periods, detrend = None):
@@ -126,14 +126,30 @@ class data_class(copy_class, backup_class, plot_class):
         self.zero_prediction()
         self.add_predictor(name, dictionary = dictionary)
         self.update_prediction()
-
-    use_es = lambda self, dictionary: self.use_predictor("es", dictionary)
-    use_auto_arima = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
-    use_arima = lambda self, dictionary: self.use_predictor("arima", dictionary)
-    use_uc = lambda self, dictionary: self.use_predictor("uc", dictionary)
-    use_prophet = lambda self, dictionary: self.use_predictor("prophet", dictionary)
-    use_cubist = lambda self, dictionary: self.use_predictor("cubist", dictionary)
         
+
+    use_naive_dict = lambda self, dictionary: self.use_predictor("naive", dictionary)
+    use_naive = lambda self, level = 'mean': self.use_naive_dict(dictionary.naive.default(level)) 
+
+    use_es_dict = lambda self, dictionary: self.use_predictor("es", dictionary)
+    use_es = lambda self, period: self.use_es_dict(dictionary.es.default(period)) 
+
+    use_prophet_dict = lambda self, dictionary: self.use_predictor("prophet", dictionary)
+    use_prophet = lambda self, seasonality = True, points = 12: self.use_prophet_dict(dictionary.prophet.default(seasonality, points)) 
+
+    use_auto_arima_dict = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
+    use_auto_arima = lambda self, period = 1, max_order = 2: self.use_auto_arima_dict(dictionary.auto_arima.default(period, max_order)) 
+    
+    use_arima_dict = lambda self, dictionary: self.use_predictor("arima", dictionary)
+    use_arima = lambda self, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, m = 12: self.use_arima_dict(dictionary.arima.default(p, d, q, P, D, Q, m))
+    
+    use_uc_dict = lambda self, dictionary: self.use_predictor("uc", dictionary)
+    use_uc = lambda self, level = 0, cycle = True, seasonal = 12, autoregressive = 1, stochastic = True: self.use_uc_dict(dictionary.uc.default(level, cycle, seasonal, autoregressive, stochastic))
+
+    use_cubist_dict = lambda self, dictionary: self.use_predictor("cubist", dictionary)
+    use_cubist = lambda self, committees = 0, neighbors = 1, composite = True, unbiased = True: self.use_cubist_dict(dictionary.cubist.default(committees, neighbors, composite, unbiased))
+            
+
     def _fit_predictors(self):
         residuals = values_class(self.get_residuals())
         self._prediction.fit(self._time, residuals)
@@ -361,24 +377,29 @@ class data_class(copy_class, backup_class, plot_class):
 
     def find_es(self, periods = [], log = True):
         arguments = dictionary.es.all(periods)
-        return self.find_best(function_name = "use_es", arguments = arguments, log = log)
+        es_dict = self.find_best(function_name = "use_es_dict", arguments = arguments, log = log)
+        self.use_es_dict(es_dict)
 
     def find_prophet(self, order = 10, log = True):
         arguments = dictionary.prophet.all(order)
-        return self.find_best(function_name = "use_prophet", arguments = arguments, log = log)
+        prophet_dict = self.find_best(function_name = "use_prophet_dict", arguments = arguments, log = log)
+        self.use_prophet_dict(prophet_dict)
 
     def find_arima(self, periods = [], order = 1, log = True):
         arguments = dictionary.arima.all(periods, order)
-        return self.find_best(function_name = "use_arima", arguments = arguments, log = log)
+        arima_dict = self.find_best(function_name = "use_arima_dict", arguments = arguments, log = log)
+        self.use_arima_dict(arima_dict)
 
     def find_uc(self, periods = [], order = 1, log = True):
         arguments = dictionary.uc.all(periods, order)
-        return self.find_best(function_name = "use_uc", arguments = arguments, log = log)
-
+        uc_dict = self.find_best(function_name = "use_uc_dict", arguments = arguments, log = log)
+        self.use_uc_dict(uc_dict)
+        
     def find_cubist(self, order = 10, log = True):
         arguments = dictionary.cubist.all(order)
-        return self.find_best(function_name = "use_cubist", arguments = arguments, log = log)    
-    
+        cubist_dict = self.find_best(function_name = "use_cubist_dict", arguments = arguments, log = log)    
+        self.use_cubist_dict(cubist_dict)
+
 
 # Data Utils
 is_zero = lambda data: (is_like_list(data) and all(np.array(data) == 0)) or (not is_like_list(data) and data == 0)

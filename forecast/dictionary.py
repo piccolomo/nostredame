@@ -1,5 +1,8 @@
 from random import choice
 
+get_range = lambda order: list(range(0, order + 1))
+B = [True, False]
+
 
 class dictionaries_class():
     def __init__(self):
@@ -23,13 +26,34 @@ class naive_dictionaries():
         return choice(self.all())
 
 
-class auto_arima_dictionaries():
-    def default(self, period = 1, order = 2):
-        return {"m": period, "max_order": order}
+class es_dictionaries():
+    def default(self, period = 12):
+        return {"seasonal_periods": period, "seasonal": "add"}
+    
+    def all(self, periods):
+        return [self.default(p) for p in periods]
 
-get_range = lambda order: list(range(0, order + 1))
-B = [True, False]
-  
+    def random(self, periods):
+        return choice(self.all(periods))
+
+
+class prophet_dictionaries():
+    def default(self, seasonality = True, points = 12):
+        return {"yearly_seasonality": seasonality, "n_changepoints": points}
+    
+    def all(self, order = 10):
+        N = get_range(order)
+        return [self.default(y, n) for y in B for n in N]
+
+    def random(self, order = 10):
+        return choice(self.all(order))
+
+    
+class auto_arima_dictionaries():
+    def default(self, period = 1, max_order = 2):
+        return {"m": period, "max_order": max_order}
+
+
 class arima_dictionaries():
     def default(self, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, m = 12):
         return {"order": (p, d, q), "seasonal_order": (P, D, Q, m)} 
@@ -40,17 +64,6 @@ class arima_dictionaries():
 
     def random(self, periods, order = 2):
         return choice(self.all(periods, order))
-
-
-class es_dictionaries():
-    def default(self, period = 12):
-        return {"seasonal_periods": period, "seasonal": "add"}
-    
-    def all(self, periods):
-        return [self.default(p) for p in periods]
-
-    def random(self, periods):
-        return choice(self.all(periods))
 
 
 class uc_dictionaries():
@@ -68,27 +81,15 @@ class uc_dictionaries():
     def random(self, periods, order = 2):
         return choice(self.all(periods, order))
 
-
-class prophet_dictionaries():
-    def default(self, seasonality = True, points = 12):
-        return {"yearly_seasonality": y, "n_changepoints": points}
-    
-    def all(self, order = 10):
-        N = get_range(order)
-        return [self.default(y, n) for y in B for n in N]
-
-    def random(self, order = 10):
-        return choice(self.all(order))
-
     
 class cubist_dictionaries():
     def default(self, committees = 0, neighbors = 1, composite = True, unbiased = True):
-        return {"n_committees": nc, "neighbors": n, "composite": c, "unbiased": u} 
+        return {"n_committees": committees, "neighbors": neighbors, "composite": composite, "unbiased": unbiased} 
         
     def all(self, order = 10):
         NC = get_range(order)
         N = range(1, 9)
-        return [self.default(nc, n, c, u) for nc in NC for n in N for c in B for u in C]
+        return [self.default(nc, n, c, u) for nc in NC for n in N for c in B for u in B]
 
     def random(self, order = 10):
         return choice(self.all(order))

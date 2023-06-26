@@ -53,7 +53,7 @@ class study_class():
 
     def get_length_string(self):
         train_length, test_length = percentage(self.train.l, self.data.l), percentage(self.test.l, self.data.l)
-        return "Test Split Ratio: " + pad_round(test_length, 5)# + "% = " + str(self.test.l)
+        return "test size: " + pad_round(test_length, 5) + "%"#" = " + str(self.test.l)
 
     def get_title_string(self, pad_length = 6):
         datas = ["data",  "Train", "Test", "Data"]
