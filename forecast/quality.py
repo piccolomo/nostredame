@@ -27,24 +27,24 @@ class quality_class(copy_class):
         self.update_long_label()
 
     def update_short_label(self):
-        label  =  "Mape " + self.get_mape_string(5) + " %"
-        label += " iR2 "  + self.get_ir2_string(5) + " %"
-        label += " Rms "  + self.get_rms_string()
+        label  =  "Mape " + self.get_mape_label(5) + " %"
+        label += " iR2 "  + self.get_ir2_label(5) + " %"
+        label += " Rms "  + self.get_rms_label()
         self.short_label = label
 
     def update_long_label(self):
-        label =  pad("Mape", 11)   + self.get_mape_string() + " %" + nl
-        label += pad("iR2", 11) + self.get_ir2_string()  + " %" + nl
-        label += pad("Rms", 11)    + self.get_rms_string()
+        label =  pad("Mape", 11)   + self.get_mape_label() + " %" + nl
+        label += pad("iR2", 11) + self.get_ir2_label()  + " %" + nl
+        label += pad("Rms", 11)    + self.get_rms_label()
         self.long_label = label
         
-    def get_mape_string(self, length = 5):
+    def get_mape_label(self, length = 5):
         return pad_round(percentage(self.mape), length) 
 
-    def get_ir2_string(self, length = 5):
+    def get_ir2_label(self, length = 5):
         return pad_round(percentage(self.ir2), length)
 
-    def get_rms_string(self, length = 5):
+    def get_rms_label(self, length = 5):
         return pad_round(self.rms, length)
         
     def __str__(self):

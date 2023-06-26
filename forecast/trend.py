@@ -75,6 +75,7 @@ class trend_class(copy_class):
 nan = np.nan
 zero_function = lambda el: 0
 none_function = lambda el: None
+nan_function = lambda el: nan
 to_time_function = lambda function: (lambda time: np.array([function(el) for el in time.index]))
 
 def get_trend_function(x, y, order = 2):
