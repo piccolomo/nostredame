@@ -1,6 +1,6 @@
 from forecast.trend import trend_class, remove_trend, to_time_function, generate_trend
 from forecast.string import pad, enclose_circled, bold, str_round
-from forecast.plot import get_acf, get_fft_inter, plt, set_plot_size
+from forecast.plot import get_acf, get_fft_inter, plt, set_plot
 from scipy.signal import find_peaks 
 import numpy as np
 

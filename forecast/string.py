@@ -2,8 +2,6 @@ import numpy as np
 import re, sys
 
 
-platform = 'windows' if  sys.platform in ['win32', 'cygwin'] else 'unix'
-
 # Escape Codes 
 
 def simple_print(simple = True):

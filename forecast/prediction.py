@@ -1,7 +1,8 @@
 from forecast.backup import copy_class
 from forecast.trend import none_function
 from forecast.values import mean
-from forecast.string import dictionary_to_string, enclose_circled, pad, platform
+from forecast.string import dictionary_to_string, enclose_circled, pad
+from forecast.platform import platform
 
 from statsmodels.tsa.statespace.structural import UnobservedComponents as UC
 from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
@@ -15,11 +16,11 @@ from statsmodels.tools.sm_exceptions import ConvergenceWarning, SpecificationWar
 from numpy.linalg import LinAlgError
 
 import warnings
-warnings.filterwarnings("error")
+#warnings.filterwarnings("error")
 warnings.filterwarnings(action = "ignore", message = "unclosed", category = ResourceWarning)
-warnings.filterwarnings(action = "ignore", category = ConvergenceWarning) # for a rare arima warning
+warnings.filterwarnings(action = "ignore", category = ConvergenceWarning) #for a rare arima warning
 
-import logging # to suppress prophet log
+import logging #to suppress prophet log
 logging.getLogger("prophet").setLevel(logging.WARNING)
 logging.getLogger("cmdstanpy").disabled = True
 

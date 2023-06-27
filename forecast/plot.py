@@ -1,16 +1,21 @@
-from forecast.string import platform, enclose_squared
+from forecast.string import enclose_squared
+from forecast.platform import platform, get_screen_size
 from scipy.interpolate import interp1d as interpolate
 from statsmodels.tsa.stattools import acf
 from scipy.fft import rfft as rfft 
 import matplotlib.pyplot as plt
+from matplotlib import rcParams as plot_parameters
 from math import ceil
 import numpy as np
 import os
 
 
-width_data = 1.5
-width_back = 1
-#alpha = 0.6
+
+w, h = get_screen_size()
+
+width_data = round(1.2  * w / 1600)
+width_back = round(1.00 * w / 1600)
+font_size = round(w / 120)
 
 color_data = "steelblue"
 #color_back = "sienna"
@@ -23,7 +28,7 @@ class plot_class():
 
     def plot(self):
         self._update_label()
-        set_plot_size()
+        set_plot()
         x, y = self.get_time(), self.get_data()
         yb = self.get_background()
         
@@ -44,7 +49,7 @@ class plot_class():
         return self
 
     def plot_acf(self):
-        set_plot_size()
+        set_plot()
         plt.clf()
         plt.plot(get_acf(self.get_residuals()), c = color_data, lw = width_data)
         plt.xlabel("Period")
@@ -54,7 +59,7 @@ class plot_class():
         return self
 
     def plot_fft(self):
-        set_plot_size()
+        set_plot()
         plt.clf()
         plt.plot(get_fft_inter(self.get_residuals()), c = color_data, lw = width_data)
         #plt.yscale("log")
@@ -72,42 +77,23 @@ class plot_class():
         return self
 
         
-# Plot Utilities
-def get_screen_size():
-    try:
-        if platform == "unix":
-            process = os.popen("xrandr -q -d :0")
-            screen = process.readlines()[0]
-            process.close()
-            width = screen.split()[7]
-            height = screen.split()[9][:-1]
-        elif platform == "windows":
-            #process = os.popen("wmic desktopmonitor get screenheight, screenwidth")
-            process = os.popen("wmic PATH Win32_VideoController GET CurrentVerticalResolution,CurrentHorizontalResolution")
-            lines = process.readlines()
-            process.close()
-            #height, width = lines[4].split()
-            width, height = lines[4].split()
-        else:
-            height, width = None, None
-        width, height = int(width), int(height)
-    except:
-        width, height = 1920, 1080
-        print("screen size failed in", platform, ": defaulting to", width, height)
-    return width, height
 
-def set_plot_size():
+
+def set_plot():
+    plot_parameters['toolbar'] = 'None'
     fig = plt.figure(0, constrained_layout = True)
     style = plt.style.available[-2]
     plt.style.use(style)
     
     mngr = plt.get_current_fig_manager();
-    x, y = [round(el / 2) for el in get_screen_size()]
-    size = "{}x{}+{}+{}".format(x, y, x, 0)
-    mngr.window.geometry(size)
+    #x, y = get_screen_size()
+    #size = "{}x{}+{}+{}".format(x, y, x, 0)
+    mngr.set_window_title("Forecast Plot")
+    #mngr.resize(x, y)
+    mngr.window.maximize()
+    #mngr.window.geometry(size)
 
-    fs = round(x / 80)
-    plt.rcParams.update({'font.size': fs, "font.family": "sans-serif"})
+    plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
 
 def show():
     plt.pause(0.01);
