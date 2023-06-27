@@ -12,7 +12,7 @@ setup(
     author = "Savino Piccolomo",
     author_email = "piccolomo@gmail.com",
     name = 'forecast',
-    version='1.1.11',
+    version='1.1.12',
     description = 'forecasts',
     #long_description = README,
     #long_description_content_type = "text/markdown",  
@@ -21,6 +21,6 @@ setup(
     packages = find_packages(),
     #python_requires = "==3.11.4",
     #include_package_data = True,
-    install_requires = ["pandas", "numpy", "scipy", "matplotlib", "prophet", "pmdarima", "scikit-learn ", "cubist"],
+    install_requires = ["pandas", "numpy", "scipy", "matplotlib", "prophet", "pmdarima", "scikit-learn"],
     classifiers = []
     )

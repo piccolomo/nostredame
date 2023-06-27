@@ -84,14 +84,19 @@ def set_plot():
     fig = plt.figure(0, constrained_layout = True)
     style = plt.style.available[-2]
     plt.style.use(style)
-    
+
+    plt.show(block = 0)
     mngr = plt.get_current_fig_manager();
     #x, y = get_screen_size()
-    #size = "{}x{}+{}+{}".format(x, y, x, 0)
+    try:
+        mngr.window.maximize()
+    except:
+        size = "{}x{}+{}+{}".format(w, h, 0, 0)
+        mngr.window.geometry(size)
+        
     mngr.set_window_title("Forecast Plot")
     #mngr.resize(x, y)
-    mngr.window.maximize()
-    #mngr.window.geometry(size)
+    #mngr.full_screen_toogle()
 
     plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
 
