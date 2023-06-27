@@ -115,7 +115,8 @@ class data_class(copy_class, backup_class, plot_class):
 
     def find_trend(self, max_order = 15, test_length = None, method = "test", log = True):
         arguments = list(range(0, max_order + 1))
-        return self.find_best(function_name = "update_trend", arguments = arguments, test_length = test_length, method = method, log = log)
+        trend = self._find_best(function_name = "update_trend", arguments = arguments, test_length = test_length, method = method, log = log)
+        self.update_trend(trend)
 
     
         
@@ -141,13 +142,17 @@ class data_class(copy_class, backup_class, plot_class):
         return season if is_like_list(season) else np.array([season] * self.length)
 
     def find_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5):
+        seasons = self.get_seasons(detrend = detrend, source = source, log = log, plot = plot, threshold = threshold)
+        self.update_season(*seasons, detrend = detrend)
+
+    def get_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5):
         detrend = self._trend.order + 1 if detrend is None and self._trend.order is not None else detrend
-        return find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
-        #tl.plt.show(block = 0)
+        seasons = find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
+        return seasons
 
     def all_seasons(self, detrend = None, threshold = 1):
-        acf = self.find_seasons(detrend = detrend, source = "acf", log = False, threshold = threshold)
-        fft = self.find_seasons(detrend = detrend, source = "fft", log = False, threshold = threshold)
+        acf = self.get_seasons(detrend = detrend, source = "acf", log = False, threshold = threshold)
+        fft = self.get_seasons(detrend = detrend, source = "fft", log = False, threshold = threshold)
         return list(set(acf + fft))
 
 
@@ -184,7 +189,7 @@ class data_class(copy_class, backup_class, plot_class):
     
     def find_es(self, periods = [], test_length = None, method = "Data", log = True):
         arguments = dictionary.es.all(periods)
-        es_dict = self.find_best(function_name = "use_es_dict", arguments = arguments, test_length = test_length, method = method, log = log)
+        es_dict = self._find_best(function_name = "use_es_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_es_dict(es_dict)
 
     use_prophet_dict = lambda self, dictionary: self.use_predictor("prophet", dictionary)
@@ -192,7 +197,7 @@ class data_class(copy_class, backup_class, plot_class):
 
     def find_prophet(self, order = 10, test_length = None, method = "Data", log = True):
         arguments = dictionary.prophet.all(order)
-        prophet_dict = self.find_best(function_name = "use_prophet_dict", arguments = arguments, test_length = test_length, method = method, log = log)
+        prophet_dict = self._find_best(function_name = "use_prophet_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_prophet_dict(prophet_dict)
 
     use_auto_arima_dict = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
@@ -203,7 +208,7 @@ class data_class(copy_class, backup_class, plot_class):
     
     def find_arima(self, periods = [], order = 1, test_length = None, method = "Data", log = True):
         arguments = dictionary.arima.all(periods, order)
-        arima_dict = self.find_best(function_name = "use_arima_dict", arguments = arguments, test_length = test_length, method = method, log = log)
+        arima_dict = self._find_best(function_name = "use_arima_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_arima_dict(arima_dict)
 
     use_uc_dict = lambda self, dictionary: self.use_predictor("uc", dictionary)
@@ -211,7 +216,7 @@ class data_class(copy_class, backup_class, plot_class):
 
     def find_uc(self, periods = [], order = 1, test_length = None, method = "Data", log = True):
         arguments = dictionary.uc.all(periods, order)
-        uc_dict = self.find_best(function_name = "use_uc_dict", arguments = arguments, test_length = test_length, method = method, log = log)
+        uc_dict = self._find_best(function_name = "use_uc_dict", arguments = arguments, test_length = test_length, method = method, log = log)
         self.use_uc_dict(uc_dict)
 
     use_cubist_dict = lambda self, dictionary: self.use_predictor("cubist", dictionary)
@@ -219,8 +224,19 @@ class data_class(copy_class, backup_class, plot_class):
             
     def find_cubist(self, order = 10, test_length = None, method = "Data", log = True):
         arguments = dictionary.cubist.all(order)
-        cubist_dict = self.find_best(function_name = "use_cubist_dict", arguments = arguments, test_length = test_length, method = method, log = log)    
+        cubist_dict = self._find_best(function_name = "use_cubist_dict", arguments = arguments, test_length = test_length, method = method, log = log)    
         self.use_cubist_dict(cubist_dict)
+
+
+        
+    def auto(self, log = True):
+        self.find_trend(log = log)
+        self.find_seasons(threshold = 2.7, log = log)
+        self.find_es(self.all_seasons(), log = log)
+        #self.find_prophet(log = log)
+        self.log() if log else None
+        self.log_split() if log else None
+        self.save_forecast(log = log)
 
 
         
@@ -240,6 +256,10 @@ class data_class(copy_class, backup_class, plot_class):
         name = self.get_name() + " extended" + enclose_circled(length)
         data.set_name(name)
         return data
+
+    def save_forecast(self, log = True):
+        self.forecast().plot().save_plot(log = log).save_background(log = log)
+        self.extend().plot().save_plot(log = log)
 
     
         
@@ -263,6 +283,7 @@ class data_class(copy_class, backup_class, plot_class):
         path = self._get_path(name) + ".csv"
         self.get_background_dataframe().to_csv(path_or_buf = path, header = False)
         print("background saved in", path) if log else None
+        return self
 
     def _project_background_to(self, data, retrain = False):
         data._trend = self._trend.project(data._time)
@@ -381,7 +402,8 @@ class data_class(copy_class, backup_class, plot_class):
         new.set_name(self.get_name() + " + " + data.get_name())
         return new
 
-    def find_best(self, function_name, arguments, test_length = None, method = "Data", log = True):
+    def _find_best(self, function_name, arguments, test_length = None, method = "Data", log = True):
+        print("optimizing function", bold(function_name)) if log else None
         data = self.copy()
         results = []
         l = len(arguments)
@@ -402,21 +424,14 @@ class data_class(copy_class, backup_class, plot_class):
             spaces = ' ' * (arg_length + 1)
             length_label = results[0][1].get_length_label()
             title = results[0][1]._label_short_title
-            print("optimizing function", bold(function_name))
             print(length_label)
             print(spaces + title)
             [print(pad(argument, arg_length), study._label_short) for (argument, study) in results]
             
         return result
 
-    # def update(self):
-    #     self._update_season_data()
-    #     self._update_trend_data()
-    #     self._update_prediction_data()
-    #     self._update_label()
-    #     self._update_quality()
 
-
+    
 # Data Utils
 is_zero = lambda data: (is_like_list(data) and all(np.array(data) == 0)) or (not is_like_list(data) and data == 0)
 

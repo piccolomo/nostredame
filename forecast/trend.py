@@ -26,15 +26,15 @@ class trend_class(copy_class):
         data = self.predict(time)
         self.set_data(data)
 
-    def fit_function(self, time, values, order):
-        function = get_trend_function(time.index, values.data, order)
-        self.set_function(to_time_function(function))
-
     def fit(self, time, values, order):
         self.fit_function(time, values, order)
         self.set_order(order)
         self.update_label()
         
+    def fit_function(self, time, values, order):
+        function = get_trend_function(time.index, values.data, order)
+        self.set_function(to_time_function(function))
+
     def update_label(self):
         no_label = self.order is None
         self.update_label_short(no_label)

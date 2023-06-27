@@ -69,6 +69,7 @@ class plot_class():
         #sleep(0.5)
         plt.savefig(path)
         print("plot saved in", path) if log else None
+        return self
 
         
 # Plot Utilities

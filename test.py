@@ -1,5 +1,4 @@
 import forecast as fr
-import plotext as plx
 
 # name = "repairs"
 # data = fr.read_data(name)
@@ -8,44 +7,44 @@ import plotext as plx
 # data.set_forecast_length(12)
 
 # name = "monthly"
-# data = fr.read_data(name)
+# data = fr.read_data(name)uu7
 # data /= (10 ** 6)
 # data.set_name("monthly repairs")
 # data.set_unit("M£")
 # data.set_forecast_length(12)
 
-name = "weekly.csv"
-data = fr.read_data(name)
-data /=  10 ** 6
-data.set_name("weekly repairs")
-data.set_unit("M£")
-data.set_forecast_length(12)
-
-name = "weekly2.csv"
-data = fr.read_data(name, header = 0)
-data.set_name("weekly2")
-data.set_unit("repairs")
-data.set_forecast_length(12)
-
-# name = "stock1.csv"
-# data = fr.read_data(name, header = 0)
-# data.set_name("stock1").set_unit("$")
+# name = "weekly.csv"
+# data = fr.read_data(name)
+# data /=  10 ** 6
+# data.set_name("weekly repairs")
+# data.set_unit("M£")
 # data.set_forecast_length(12)
 
-name = "stock2.csv"
-data = fr.read_data(name, header = 0)
-data.set_name("stock2").set_unit("$")
-data.set_forecast_length(12)
+# name = "weekly2.csv"
+# data = fr.read_data(name, header = 0)
+# data.set_name("weekly2")
+# data.set_unit("repairs")
+# data.set_forecast_length(12)
 
-name = "salford.csv"
-data = fr.read_data(name, header = 0)
-data.set_name("salford").set_unit("$")
-data.set_forecast_length(12)
+# # name = "stock1.csv"
+# # data = fr.read_data(name, header = 0)
+# # data.set_name("stock1").set_unit("$")
+# # data.set_forecast_length(12)
 
-name = "car.csv"
-data = fr.read_data(name, header = 0)
-data.set_name("weekly repairs car").set_unit("repairs")
-data.set_forecast_length(12)
+# name = "stock2.csv"
+# data = fr.read_data(name, header = 0)
+# data.set_name("stock2").set_unit("$")
+# data.set_forecast_length(12)
+
+# name = "salford.csv"
+# data = fr.read_data(name, header = 0)
+# data.set_name("salford").set_unit("$")
+# data.set_forecast_length(12)
+
+# name = "car.csv"
+# data = fr.read_data(name, header = 0)
+# data.set_name("weekly repairs car").set_unit("repairs")
+# data.set_forecast_length(12)
 
 name = "plu.csv"
 data = fr.read_data(name, header = 0)
@@ -58,12 +57,15 @@ fr.simple_print(0)
 data.backup()
 log = 1
 
+# AUTO
+data.auto(log = log)
+
 
 # SIMULATE
 #data.simulate(trend = 10, period = 10, noise = 2).plot()
 
 # MANUAL TREND
-data.update_trend(0)
+#data.update_trend(0)
 
 # FIND TREND
 #trend = data.find_trend(method = "test", test_length = None, log = log)
@@ -117,17 +119,12 @@ data.update_trend(0)
 #data.use_cubist(committees = 1, neighbors = 3, composite = True, unbiased = True)
 
 # FIND CUBIST
-data.find_cubist(order = 10, method = "Data", test_length = None, log = log)
+#data.find_cubist(order = 10, method = "Data", test_length = None, log = log)
 
-# data.log()
-data.log_split(0.2)
-data.plot()
+# LOG and PLOT
+# data.log() if log else None
+# data.log_split() if log else None
+# data.plot()
 
-# f = data.forecast()
-# f.plot()
-# f.save_plot(log = log)
-# f.save_background(log = log)
-
-# e = data.extend()
-# e.plot()
-# e.save_plot()
+# FORECAST and SAVE RESULTS
+#data.save_forecast()
