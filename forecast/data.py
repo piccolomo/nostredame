@@ -113,10 +113,9 @@ class data_class(copy_class, backup_class, plot_class):
         trend = self._trend.get_data()
         return trend if is_like_list(trend) else np.array([trend] * self.length)
 
-    def find_trend(self, max_order = 15, test_length = None, method = "test", log = True):
+    def find_trend(self, max_order = 15, test_length = None, method = "test", apply_result = True, log = True):
         arguments = list(range(0, max_order + 1))
-        trend = self._find_best(function_name = "update_trend", arguments = arguments, test_length = test_length, method = method, log = log)
-        self.update_trend(trend)
+        return self._find_best(function_name = "update_trend", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)
 
     
         
@@ -141,18 +140,16 @@ class data_class(copy_class, backup_class, plot_class):
         season = self._season.get_data()
         return season if is_like_list(season) else np.array([season] * self.length)
 
-    def find_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5):
-        seasons = self.get_seasons(detrend = detrend, source = source, log = log, plot = plot, threshold = threshold)
-        self.update_season(*seasons, detrend = detrend)
-
-    def get_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5):
+    def find_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5, apply_result = False):
         detrend = self._trend.order + 1 if detrend is None and self._trend.order is not None else detrend
         seasons = find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
+        self.update_season(*seasons, detrend = detrend) if apply_result else None
+        print("seasons applied to data\n") if apply_result and log else None
         return seasons
 
     def all_seasons(self, detrend = None, threshold = 1):
-        acf = self.get_seasons(detrend = detrend, source = "acf", log = False, threshold = threshold)
-        fft = self.get_seasons(detrend = detrend, source = "fft", log = False, threshold = threshold)
+        acf = self.find_seasons(detrend = detrend, source = "acf", log = False, threshold = threshold, apply_result = False)
+        fft = self.find_seasons(detrend = detrend, source = "fft", log = False, threshold = threshold, apply_result = False)
         return list(set(acf + fft))
 
 
@@ -187,18 +184,16 @@ class data_class(copy_class, backup_class, plot_class):
     use_es_dict = lambda self, dictionary: self.use_predictor("es", dictionary)
     use_es = lambda self, period: self.use_es_dict(dictionary.es.default(period))
     
-    def find_es(self, periods = [], test_length = None, method = "Data", log = True):
+    def find_es(self, periods = [], test_length = None, method = "Data", apply_result = True, log = True):
         arguments = dictionary.es.all(periods)
-        es_dict = self._find_best(function_name = "use_es_dict", arguments = arguments, test_length = test_length, method = method, log = log)
-        self.use_es_dict(es_dict)
+        return self._find_best(function_name = "use_es_dict", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)
 
     use_prophet_dict = lambda self, dictionary: self.use_predictor("prophet", dictionary)
     use_prophet = lambda self, seasonality = True, points = 12: self.use_prophet_dict(dictionary.prophet.default(seasonality, points)) 
 
-    def find_prophet(self, order = 10, test_length = None, method = "Data", log = True):
+    def find_prophet(self, order = 10, test_length = None, method = "Data", apply_result = True, log = True):
         arguments = dictionary.prophet.all(order)
-        prophet_dict = self._find_best(function_name = "use_prophet_dict", arguments = arguments, test_length = test_length, method = method, log = log)
-        self.use_prophet_dict(prophet_dict)
+        return self._find_best(function_name = "use_prophet_dict", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)
 
     use_auto_arima_dict = lambda self, dictionary: self.use_predictor("auto_arima", dictionary)
     use_auto_arima = lambda self, period = 1, max_order = 2: self.use_auto_arima_dict(dictionary.auto_arima.default(period, max_order)) 
@@ -206,32 +201,29 @@ class data_class(copy_class, backup_class, plot_class):
     use_arima_dict = lambda self, dictionary: self.use_predictor("arima", dictionary)
     use_arima = lambda self, p = 1, d = 1, q = 1, P = 1, D = 1, Q = 1, m = 12: self.use_arima_dict(dictionary.arima.default(p, d, q, P, D, Q, m))
     
-    def find_arima(self, periods = [], order = 1, test_length = None, method = "Data", log = True):
+    def find_arima(self, periods = [], order = 1, test_length = None, method = "Data", apply_result = True, log = True):
         arguments = dictionary.arima.all(periods, order)
-        arima_dict = self._find_best(function_name = "use_arima_dict", arguments = arguments, test_length = test_length, method = method, log = log)
-        self.use_arima_dict(arima_dict)
+        return self._find_best(function_name = "use_arima_dict", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)
 
     use_uc_dict = lambda self, dictionary: self.use_predictor("uc", dictionary)
     use_uc = lambda self, level = 0, cycle = True, seasonal = 12, autoregressive = 1, stochastic = True: self.use_uc_dict(dictionary.uc.default(level, cycle, seasonal, autoregressive, stochastic))
 
-    def find_uc(self, periods = [], order = 1, test_length = None, method = "Data", log = True):
+    def find_uc(self, periods = [], order = 1, test_length = None, method = "Data", apply_result = True, log = True):
         arguments = dictionary.uc.all(periods, order)
-        uc_dict = self._find_best(function_name = "use_uc_dict", arguments = arguments, test_length = test_length, method = method, log = log)
-        self.use_uc_dict(uc_dict)
+        return self._find_best(function_name = "use_uc_dict", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)
 
     use_cubist_dict = lambda self, dictionary: self.use_predictor("cubist", dictionary)
     use_cubist = lambda self, committees = 0, neighbors = 1, composite = True, unbiased = True: self.use_cubist_dict(dictionary.cubist.default(committees, neighbors, composite, unbiased))
             
-    def find_cubist(self, order = 10, test_length = None, method = "Data", log = True):
+    def find_cubist(self, order = 10, test_length = None, method = "Data", apply_result = True, log = True):
         arguments = dictionary.cubist.all(order)
-        cubist_dict = self._find_best(function_name = "use_cubist_dict", arguments = arguments, test_length = test_length, method = method, log = log)    
-        self.use_cubist_dict(cubist_dict)
+        return self._find_best(function_name = "use_cubist_dict", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)    
 
 
         
     def auto(self, log = True):
         self.find_trend(log = log)
-        self.find_seasons(threshold = 2.7, log = log)
+        self.find_seasons(threshold = 2.7, log = log, apply_result = True)
         self.find_es(self.all_seasons(), log = log)
         #self.find_prophet(log = log)
         self.log() if log else None
@@ -393,7 +385,7 @@ class data_class(copy_class, backup_class, plot_class):
         new.set_name(self.get_name() + " + " + data.get_name())
         return new
 
-    def _find_best(self, function_name, arguments, test_length = None, method = "Data", log = True):
+    def _find_best(self, function_name, arguments, test_length = None, method = "Data", log = True, apply_result = True):
         print("optimizing function", bold(function_name)) if log else None
         data = self.copy()
         results = []
@@ -409,7 +401,8 @@ class data_class(copy_class, backup_class, plot_class):
 
         results.sort(key = lambda el: el[1].quality)
         result = results[0][0] if len(results) > 0 else None
-
+        eval('self.' + function_name + "(result)") if result is not None and apply_result else None
+        
         if log and result is not None:
             arg_length = max([len(str(arg)) for arg in arguments])
             spaces = ' ' * (arg_length + 1)
@@ -420,8 +413,8 @@ class data_class(copy_class, backup_class, plot_class):
             print(method_label)
             print(spaces + title)
             [print(pad(argument, arg_length), study._label_short) for (argument, study) in results]
+            print("best result applied to data") if apply_result else None
             print()
-            
         return result
 
 

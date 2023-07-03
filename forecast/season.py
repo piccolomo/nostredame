@@ -94,8 +94,7 @@ def get_peaks(data, threshold = 1, order = 1):
     return sorted(zip(positions, heights, prominences), key = lambda tuple: tuple[order], reverse = 1)
 
 def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = True, threshold = 2.5):
-    #print("Detrend Order", detrend_order, nl) if log else None
-    #log += plot
+    print("detrend order", detrend_order) if log else None
     proceed_manually = (plot == 1)
     length = len(data)
     source = "acf" if "a" in source else "fft"
