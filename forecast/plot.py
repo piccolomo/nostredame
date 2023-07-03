@@ -81,7 +81,7 @@ class plot_class():
     
 def set_plot():
     plot_parameters['toolbar'] = 'None'
-    fig = plt.figure(0, constrained_layout = True)
+    fig = plt.figure(constrained_layout = True)
     style = plt.style.available[-2]
     plt.style.use(style)
     plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
