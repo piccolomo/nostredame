@@ -30,7 +30,6 @@ class plot_class():
 
     def plot(self):
         self._update_label()
-        set_plot()
         x, y = self.get_time(), self.get_data()
         yb = self.get_background()
         
@@ -39,35 +38,31 @@ class plot_class():
         xlabel = "Time" #+ enclose(self.time.form.replace('%', ''))
         ylabel = name + " " + unit
 
-        plt.clf()
+        set_plot(name)
         plt.plot(x, y, c = color_data, lw = width_data, label = name)
         plt.plot(x, yb, c = color_back, lw = width_back, label = self._label_short) if self.background_ok else None
 
         plt.ylabel(ylabel)
-        plt.title(name)
-
         plt.legend()
         show()
         return self
 
     def plot_acf(self):
-        set_plot()
-        plt.clf()
+        title = "Autocorrelation Plot of " + self._residuals_label.title()
+        set_plot(title)
         plt.plot(get_acf(self.get_residuals()), c = color_data, lw = width_data)
         plt.xlabel("Period")
         #plt.ylabel("ACF")
-        plt.title("Autocorrelation Plot of " + self._residuals_label.title())
         show()
         return self
 
     def plot_fft(self):
-        set_plot()
-        plt.clf()
+        title = "Fourier Plot of " + self._residuals_label.title()
+        set_plot(title)
         plt.plot(get_fft_inter(self.get_residuals()), c = color_data, lw = width_data)
         #plt.yscale("log")
         plt.xlabel("Period")
         #plt.ylabel("FFT")
-        plt.title("Fourier Plot of " + self._residuals_label.title())
         show()
         return self
 
@@ -79,7 +74,7 @@ class plot_class():
         return self
 
     
-def set_plot():
+def set_plot(title):
     plot_parameters['toolbar'] = 'None'
     fig = plt.figure(constrained_layout = True)
     style = plt.style.available[-2]
@@ -87,7 +82,8 @@ def set_plot():
     plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
 
     mngr = plt.get_current_fig_manager();
-    mngr.set_window_title("Forecast Plot")
+    mngr.set_window_title(title)
+
     try:
         size_temp = "{}x{}+{}+{}".format(pw//2, ph//2, 0, h - ph - tbh)
         mngr.window.geometry(size_temp); show()
@@ -95,7 +91,10 @@ def set_plot():
         mngr.window.geometry(size); show()
     except:
         print("Unable to set plot window size using window.geometry()")
-        
+
+    plt.clf()
+    plt.title(title)
+    
 
 def show():
     plt.pause(0.01);
