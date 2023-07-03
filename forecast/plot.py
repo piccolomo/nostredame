@@ -12,10 +12,11 @@ import os
 
 
 w, h = get_screen_size()
+pw, ph = w // 2, h // 2
 
 width_data = round(1.2  * w / 1600)
 width_back = round(1.00 * w / 1600)
-font_size = round(w / 120)
+font_size = round(pw / 90)
 
 color_data = "steelblue"
 #color_back = "sienna"
@@ -82,21 +83,18 @@ def set_plot():
     fig = plt.figure(0, constrained_layout = True)
     style = plt.style.available[-2]
     plt.style.use(style)
-
-    plt.show(block = 0)
-    mngr = plt.get_current_fig_manager();
-    #x, y = get_screen_size()
-    try:
-        mngr.window.maximize()
-    except:
-        size = "{}x{}+{}+{}".format(w, h, 0, 0)
-        mngr.window.geometry(size)
-        
-    mngr.set_window_title("Forecast Plot")
-    #mngr.resize(x, y)
-    #mngr.full_screen_toogle()
-
     plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
+
+    mngr = plt.get_current_fig_manager();
+    mngr.set_window_title("Forecast Plot")
+    try:
+        size_temp = "{}x{}+{}+{}".format(pw//2, ph//2, 0, 0)
+        mngr.window.geometry(size_temp); show()
+        size = "{}x{}+{}+{}".format(pw, ph, 0, 0)
+        mngr.window.geometry(size)
+    except:
+        print("Unable to set plot window size using window.geometry()")
+        
 
 def show():
     plt.pause(0.01);

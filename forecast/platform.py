@@ -24,6 +24,6 @@ def get_screen_size():
             height, width = None, None
         width, height = int(width), int(height)
     except:
-        width, height = 1920, 1080
-        print("screen size failed in", platform, ": defaulting to", width, height)
+        width, height = 2560, 1440
+        print("screen size failed in " + platform + ": defaulting to", width, "x", height)
     return width, height
