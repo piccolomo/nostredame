@@ -128,7 +128,7 @@ def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = 
         print("no peaks found: see ya!") if log else None
 
     if plot:
-        set_plot_size()
+        set_plot()
         title = "AutoCorrelation Plot" if use_acf else "FFT Plot"
         plt.clf()
         plt.plot(x, peaks_data)
