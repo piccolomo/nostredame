@@ -76,9 +76,7 @@ class plot_class():
         print("plot saved in", path) if log else None
         return self
 
-        
-
-
+    
 def set_plot():
     plot_parameters['toolbar'] = 'None'
     fig = plt.figure(0, constrained_layout = True)

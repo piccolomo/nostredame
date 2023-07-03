@@ -235,7 +235,6 @@ class data_class(copy_class, backup_class, plot_class):
         self.find_es(self.all_seasons(), log = log)
         #self.find_prophet(log = log)
         self.log() if log else None
-        self.log_split() if log else None
         self.save_forecast(log = log)
 
 
@@ -331,7 +330,7 @@ class data_class(copy_class, backup_class, plot_class):
         name = "data" if self.name is None else self.name
         title = bold(self.get_name() + " Log")
         study = study_class(self, test_length)
-        print(title + nl + self._label_long + nl + study._label_long)
+        print(title + nl + self._label_long + nl + study._label_long + nl)
         return self
 
     def set(self, data):
@@ -419,6 +418,7 @@ class data_class(copy_class, backup_class, plot_class):
             print(length_label)
             print(spaces + title)
             [print(pad(argument, arg_length), study._label_short) for (argument, study) in results]
+            print()
             
         return result
 
