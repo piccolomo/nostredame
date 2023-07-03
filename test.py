@@ -21,6 +21,8 @@ fr.simple_print(0)
 data.backup()
 log = 1
 
+data.plot()
+
 # AUTO
 #data.auto(log = log)
 

@@ -12,7 +12,8 @@ import os
 
 
 w, h = get_screen_size()
-pw, ph = w // 2, h // 2
+tbh = round(0.08 * h) # toolbar height
+pw, ph = 3 * w // 4, 3 * (h - tbh) // 4
 
 width_data = round(1.2  * w / 1600)
 width_back = round(1.00 * w / 1600)
@@ -88,10 +89,10 @@ def set_plot():
     mngr = plt.get_current_fig_manager();
     mngr.set_window_title("Forecast Plot")
     try:
-        size_temp = "{}x{}+{}+{}".format(pw//2, ph//2, 0, 0)
+        size_temp = "{}x{}+{}+{}".format(pw//2, ph//2, 0, h - ph - tbh)
         mngr.window.geometry(size_temp); show()
-        size = "{}x{}+{}+{}".format(pw, ph, 0, 0)
-        mngr.window.geometry(size)
+        size = "{}x{}+{}+{}".format(pw, ph, 0, h - ph - tbh)
+        mngr.window.geometry(size); show()
     except:
         print("Unable to set plot window size using window.geometry()")
         
