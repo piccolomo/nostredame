@@ -1,55 +1,19 @@
 import forecast as fr
 
 # name = "repairs"
-# data = fr.read_data(name)
-# data.set_name("weekly repairs")
-# data.set_unit("M£")
-# data.set_forecast_length(12)
-
 # name = "monthly"
-# data = fr.read_data(name)uu7
-# data /= (10 ** 6)
-# data.set_name("monthly repairs")
-# data.set_unit("M£")
-# data.set_forecast_length(12)
-
 # name = "weekly.csv"
-# data = fr.read_data(name)
-# data /=  10 ** 6
-# data.set_name("weekly repairs")
-# data.set_unit("M£")
-# data.set_forecast_length(12)
-
 # name = "weekly2.csv"
-# data = fr.read_data(name, header = 0)
-# data.set_name("weekly2")
-# data.set_unit("repairs")
-# data.set_forecast_length(12)
-
-# # name = "stock1.csv"
-# # data = fr.read_data(name, header = 0)
-# # data.set_name("stock1").set_unit("$")
-# # data.set_forecast_length(12)
-
-# name = "stock2.csv"
-# data = fr.read_data(name, header = 0)
-# data.set_name("stock2").set_unit("$")
-# data.set_forecast_length(12)
-
 # name = "salford.csv"
-# data = fr.read_data(name, header = 0)
-# data.set_name("salford").set_unit("$")
-# data.set_forecast_length(12)
-
 # name = "car.csv"
-# data = fr.read_data(name, header = 0)
-# data.set_name("weekly repairs car").set_unit("repairs")
-# data.set_forecast_length(12)
+name = "plu"
 
-name = "plu.csv"
 data = fr.read_data(name, header = 0)
-data.set_name("weekly repairs plu").set_unit("repairs")
+
+data.set_name("weekly repairs plu")
+data.set_unit("repairs")
 data.set_forecast_length(12)
+# data /= (10 ** 6)
 
 
 # SETTINGS
@@ -58,7 +22,7 @@ data.backup()
 log = 1
 
 # AUTO
-data.auto(log = log)
+#data.auto(log = log)
 
 
 # SIMULATE

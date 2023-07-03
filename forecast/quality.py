@@ -2,8 +2,8 @@ from forecast.values import rms, mean, has_nan
 from forecast.backup import copy_class
 
 from forecast.string import is_like_list, pad_round, pad, nl, percentage
-from sklearn.metrics import mean_absolute_percentage_error as mape
-from sklearn.metrics import r2_score as r2
+#from sklearn.metrics import mean_absolute_percentage_error as mape
+#from sklearn.metrics import r2_score as r2
 
 import numpy as np
 
@@ -65,3 +65,16 @@ def get_qualities(y_true, y_pred):
     rms_score = rms(y_true - y_pred) if good_data else nan
     
     return r2_score, mape_score, rms_score
+
+def mape(true, pred):
+    # true = np.array(true)
+    # pred = np.array(pred)
+    # non_zero = true != 0
+    # true = true[non_zero]
+    # pred = pred[non_zero]
+    error = np.abs(true - pred)
+    mape = error / true
+    return np.mean(mape)
+
+def r2(true, pred):
+    return 1 - (rms(true - pred) / np.std(true)) ** 2
