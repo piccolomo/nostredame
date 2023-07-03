@@ -2,15 +2,15 @@ import forecast as fr
 
 # name = "repairs"
 # name = "monthly"
-# name = "weekly.csv"
-# name = "weekly2.csv"
-# name = "salford.csv"
-# name = "car.csv"
-name = "plu"
+# name = "weekly"
+name = "weekly2"
+#name = "salford"
+# name = "car"
+#name = "plu"
 
 data = fr.read_data(name, header = 0)
 
-data.set_name("weekly repairs plu")
+data.set_name(name)
 data.set_unit("repairs")
 data.set_forecast_length(12)
 # data /= (10 ** 6)
@@ -28,6 +28,9 @@ log = 1
 # SIMULATE
 #data.simulate(trend = 10, period = 10, noise = 2).plot()
 
+# SMOOTH
+#data.smooth(length = 5)
+
 # MANUAL TREND
 #data.update_trend(0)
 
@@ -38,14 +41,15 @@ log = 1
 # MANUAL SEASON
 #data.update_season(52, detrend = None)
 
-# FIND SEASON -----------
+# FIND SEASON
 # threshold = 2
 # seasons_acf = data.find_seasons(detrend = None, source = "acf", threshold = threshold, plot = 1, log = log)
 # seasons_fft = data.find_seasons(detrend = 3, source = "fft", threshold = threshold, plot = 0, log = log)
 # seasons = seasons_acf + seasons_fft
 # data.update_season(*seasons, detrend = None)
 
-# NAIVE -----------
+
+# NAIVE PREDICTOR
 #data.use_naive('zero')
 
 

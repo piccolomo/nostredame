@@ -325,23 +325,15 @@ class data_class(copy_class, backup_class, plot_class):
         no_label = len(labels) == 0
         self._label_long = "No Background" if no_label else nl.join(labels)
 
-    def __str__(self):
-        name = "data" if self.name is None else self.name
-        title = bold(self.get_name() + " Log")
-        return title + nl + self._label_long + nl + str(self._quality)
-
-    def log(self):
+    def log(self, test_length = None):
         self._update_label()
         self._update_quality()
-        print(str(self))
+        name = "data" if self.name is None else self.name
+        title = bold(self.get_name() + " Log")
+        study = study_class(self, test_length)
+        print(title + nl + self._label_long + nl + study._label_long)
         return self
 
-    def log_split(self, test_length = None):
-        study = study_class(self, test_length)
-        study.log()
-        
-
-        
     def set(self, data):
         data = data if is_like_list(data) else [data] * self.length
         self._values.set(data)
@@ -422,7 +414,7 @@ class data_class(copy_class, backup_class, plot_class):
         if log and result is not None:
             arg_length = max([len(str(arg)) for arg in arguments])
             spaces = ' ' * (arg_length + 1)
-            length_label = results[0][1].get_length_label()
+            length_label = results[0][1].get_length()
             title = results[0][1]._label_short_title
             print(length_label)
             print(spaces + title)
@@ -437,3 +429,10 @@ is_zero = lambda data: (is_like_list(data) and all(np.array(data) == 0)) or (not
 
 generate_noise = lambda mean, amplitude, length: np.random.normal(0, amplitude , length)
 ratio_to_length = lambda ratio, length: length if ratio is None else round(ratio * length) if ratio <= 1 else int(ratio)
+
+def moving_average(data, length = 1):
+    l = len(data)
+    left_half = length // 2
+    right_half = (length + 1) // 2
+    window = lambda i: range(max(i - left_half, 0) , min(i + right_half, l))
+    return [np.mean([data[j] for j in window(i)]) for i in range(l)]
