@@ -413,9 +413,11 @@ class data_class(copy_class, backup_class, plot_class):
         if log and result is not None:
             arg_length = max([len(str(arg)) for arg in arguments])
             spaces = ' ' * (arg_length + 1)
+            method_label = "method: " + results[0][1].method
             length_label = results[0][1].get_length()
             title = results[0][1]._label_short_title
             print(length_label)
+            print(method_label)
             print(spaces + title)
             [print(pad(argument, arg_length), study._label_short) for (argument, study) in results]
             print()
