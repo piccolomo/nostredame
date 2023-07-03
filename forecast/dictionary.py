@@ -96,3 +96,5 @@ class cubist_dictionaries():
 
 
 dictionary = dictionaries_class()
+uc_levels = dictionary.uc.levels
+uc_levels = {i:uc_levels[i] for i in range(len(uc_levels))}
