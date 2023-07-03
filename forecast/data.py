@@ -100,7 +100,7 @@ class data_class(copy_class, backup_class, plot_class):
         self._update_quality(); self._update_label(); 
         
     def fit_trend(self, order = None):
-        order = self._trend.order if order is None else order
+        #order = self._trend.order if order is None else order
         self._trend.fit(self._time, self._values, order)
 
     def _update_trend_data(self):
@@ -117,15 +117,18 @@ class data_class(copy_class, backup_class, plot_class):
         arguments = list(range(0, max_order + 1))
         return self._find_best(function_name = "update_trend", arguments = arguments, test_length = test_length, method = method, apply_result = apply_result, log = log)
 
+    def correct_detrend_order(self, detrend = None):
+        trend_order = self._trend.order
+        return 3 if detrend is None and trend_order is None else trend_order + 1 if detrend is None and trend_order is not None else detrend
     
         
     def update_season(self, *periods, detrend = None):
-        detrend = self._trend.order  if detrend is None and self._trend.order is not None else detrend
         self.fit_season(*periods, detrend = detrend)
         self._update_season_data()
 
     def fit_season(self, *periods, detrend = None):
-        periods = self._season.periods if len(periods) == 0 else periods
+        detrend = self.correct_detrend_order(detrend)
+        #periods = self._season.periods if len(periods) == 0 else periods
         self._season.fit(self._time, self._values, periods, detrend)
         self._season.update_label()
 
@@ -140,11 +143,11 @@ class data_class(copy_class, backup_class, plot_class):
         season = self._season.get_data()
         return season if is_like_list(season) else np.array([season] * self.length)
 
-    def find_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5, apply_result = False):
-        detrend = self._trend.order + 1 if detrend is None and self._trend.order is not None else detrend
+    def find_seasons(self, detrend = None, source = "acf", log = True, plot = False, threshold = 2.5, apply_result = True):
+        detrend = self.correct_detrend_order(detrend)
         seasons = find_seasons(self._values.data, detrend_order = detrend, source = source, log = log, plot = plot, threshold = threshold)
         self.update_season(*seasons, detrend = detrend) if apply_result else None
-        print("seasons applied to data\n") if apply_result and log else None
+        print("seasons applied to data\n") if apply_result and log and len(seasons) > 0 else None
         return seasons
 
     def all_seasons(self, detrend = None, threshold = 1):
@@ -221,13 +224,16 @@ class data_class(copy_class, backup_class, plot_class):
 
 
         
-    def auto(self, log = True):
-        self.find_trend(log = log)
-        self.find_seasons(threshold = 2.7, log = log, apply_result = True)
-        self.find_es(self.all_seasons(), log = log)
-        #self.find_prophet(log = log)
+    def auto(self, trend = True, season = True, prediction = True, log = True, save = True):
+        self.find_trend(log = log) if isinstance(trend, bool) and trend else self.update_trend(trend) if not isinstance(trend, bool) and isinstance(trend, int) else self.update_trend(None)
+        
+        season = [season] if isinstance(season, int) and not isinstance(season, bool) else season
+        self.find_seasons(threshold = 2.7, log = log, apply_result = True) if isinstance(season, bool) and season else self.update_season(*season) if not isinstance(season, bool) and isinstance(season, list) else self.update_season()
+        
+        self.find_es(self.all_seasons(), log = log) if isinstance(prediction, bool) and prediction else self.use_es(prediction) if not isinstance(prediction, bool) and isinstance(prediction, int) else self.zero_prediction()
+        
         self.log() if log else None
-        self.save_forecast(log = log)
+        self.save_forecast(log = log) if save else None
 
 
         

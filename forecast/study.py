@@ -54,14 +54,14 @@ class study_class():
         self._update_label_long()
 
     def _update_label_short(self):
-        mape = bold('mape') + sp + self.get_mape() + ' [%]' + sp
+        mape = 'mape' + sp + self.get_mape() + ' [%]' + sp
         mape_title = ' ' * (4 + sl) + self.get_title() + ' ' * (4 + sl)
         
-        ir2 = bold('ir2') + sp + self.get_ir2() + ' [%]' + sp
+        ir2 = 'ir2' + sp + self.get_ir2() + ' [%]' + sp
         ir2_title = ' ' * (3 + sl) +  self.get_title() + ' ' * (4 + sl)
 
         rms_length = self.data._values.pad_length
-        rms = bold('rms') + sp + self.get_rms() #+ ' ' + self.data.get_unit(True)
+        rms = 'rms' + sp + self.get_rms() #+ ' ' + self.data.get_unit(True)
         rms_title = ' ' * (3 + sl) + self.get_title()
 
         #self._label_short_title = mape_title + ir2_title + rms_title
@@ -74,9 +74,9 @@ class study_class():
         length = self.get_length() + nl
         rms_length = self.data._values.pad_length
         title = ' ' * (4 + sl) +  self.get_title() + nl
-        mape = bold('mape') + sp + self.get_mape() + ' [%]' + sp + nl
-        ir2 = bold('ir2 ') + sp + self.get_ir2() + ' [%]' + sp + nl
-        rms = bold('rms ') + sp + self.get_rms() + ' ' + self.data.get_unit(True)
+        mape = 'mape' + sp + self.get_mape() + ' [%]' + sp + nl
+        ir2 = 'ir2 ' + sp + self.get_ir2() + ' [%]' + sp + nl
+        rms = 'rms ' + sp + self.get_rms() + ' ' + self.data.get_unit(True)
         self._label_long = length + title + mape + ir2 + rms
 
     def get_length(self):
@@ -85,7 +85,7 @@ class study_class():
 
     def get_title(self):
         datas = ["data",  "train", "test", "Data"]
-        return sp.join([bold(pad(el, self.pad_length)) for el in datas])
+        return sp.join([pad(el, self.pad_length) for el in datas])
         
     def get_mape(self):
         mape = [pad(el._quality.get_mape(), self.pad_length) for el in self.datas]

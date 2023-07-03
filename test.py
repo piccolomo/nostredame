@@ -3,10 +3,10 @@ import forecast as fr
 # name = "repairs"
 # name = "monthly"
 # name = "weekly"
-name = "weekly2"
+#name = "weekly2"
 #name = "salford"
 # name = "car"
-#name = "plu"
+name = "plu"
 
 data = fr.read_data(name, header = 0)
 
