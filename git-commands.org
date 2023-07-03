@@ -1,0 +1,38 @@
+General Settings
+- to set the user name: git config --global user.name "Savino Piccolomo"
+- to set the user email: git config --global user.email savino.piccolomo@togetherhousing.co.uk
+- to set the default branch name: git config --global init.default branch main
+
+Manage Repo
+- create a repo: git init
+- check status: git status
+- add a file to commit: git add file
+- add all files to commit: git add .
+- remove file from commit: git rm --cached file
+- use previously commited version of a file for next commit: git restore --staged file
+  - if file is not present in previos version this is equivalent to git rm --cached
+- remove all files from commit: git rm -r --cached .
+- to ingnore files: use file .gitignore in project folder
+- commit files: git commit -m "message"
+- add all files to staging and commit: git commit -a -m "message"
+- check differences from last commit: git diff
+- restore a deleted file: git restore file
+- change file name: git mv previous_name current_name
+  - file had to be in previous commit
+  - file gets automatically staged (ready to commit)
+- check log of commits: git log --online
+- modify last commit message: git commit -m "new message" --amend
+- check commit history with file modifications: git log -p
+- jump to a previous commit (no change to working files): git reset commit_code
+- undo reset: git reset HEAD@{1}
+- check history of commits and others: git reflog
+
+
+Branch
+- create new: git branch name
+- check branches: git branch
+- switch to branch: git switch branch
+- create and switch: git switch -c name
+- merge a branch to master/main (from main): git merge -m "message" branch_name
+- delete a branch (already merged): git branch -d name
+- delete a branch (not merged): git branch -D name
