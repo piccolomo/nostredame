@@ -1,18 +1,24 @@
 import os, sys
 
+platform = 'windows' if 'win' in sys.platform else 'unix'
 
-platform = 'windows' if  sys.platform in ['win32', 'cygwin'] else 'unix'
-
+def set_screen_default_size(width = 2560, height = 1440):
+    global width_default, height_default
+    width_default = width
+    height_default = height
+    #get_screen_size()
 
 # Plot Utilities
 def get_screen_size():
+    global width
+    global height
     try:
         if platform == "unix":
             process = os.popen("xrandr -q -d :0")
             screen = process.readlines()[0]
             process.close()
             width = screen.split()[7]
-            height = screen.split()[9][:-1]
+            height = screen.splixt()[9][:-1]
         elif platform == "windows":
             #process = os.popen("wmic desktopmonitor get screenheight, screenwidth")
             process = os.popen("wmic PATH Win32_VideoController GET CurrentVerticalResolution,CurrentHorizontalResolution")
@@ -24,6 +30,9 @@ def get_screen_size():
             height, width = None, None
         width, height = int(width), int(height)
     except:
-        width, height = 2560, 1440
-        print("screen size failed in " + platform + ": defaulting to", width, "x", height)
+        width, height = width_default, height_default
+        print("screen size failed in " + platform + ": defaulting to", width_default, "x", height_default)
     return width, height
+
+#set_screen_default_size()
+#get_screen_size()

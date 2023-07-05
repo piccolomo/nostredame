@@ -16,7 +16,7 @@ from statsmodels.tools.sm_exceptions import ConvergenceWarning, SpecificationWar
 from numpy.linalg import LinAlgError
 
 import warnings
-#warnings.filterwarnings("error")
+warnings.filterwarnings(action = "ignore", category = UserWarning) #  For some arima warning
 warnings.filterwarnings(action = "ignore", message = "unclosed", category = ResourceWarning)
 warnings.filterwarnings(action = "ignore", category = ConvergenceWarning) #for a rare arima warning
 
@@ -208,43 +208,10 @@ class naive_predictor(predictor_class):
         self.set_function(function)
         self.set_status(1)
 
-
-class arima_predictor(predictor_class):
-    def __init__(self, dictionary):
-        predictor_class.__init__(self, "arima", dictionary)
-
-    def fit(self, time, values):
-        try:
-            dataframe = self.get_dataframe(time, values)
-            model = arima(endog = dataframe, **self.dictionary)
-            fit = model.fit(disp = 0)
-            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
-            self.set_function(function)
-            self.set_status(1)
-        except (UserWarning, RuntimeWarning, LinAlgError, TypeError, ValueError, ConvergenceWarning):
-            self.set_status(-1)
-
-
-class auto_arima_predictor(arima_predictor):
-    def __init__(self, dictionary):
-        predictor_class.__init__(self, "auto arima", dictionary)
-
-    def fit(self, time, values):
-        try:
-            model = auto_arima(values.data, **self.dictionary)
-            order = model.order
-            seasonal_order = model.seasonal_order
-            dictionary = {"order": order, "seasonal_order": seasonal_order}
-            arima_predictor.__init__(self, dictionary)
-            self.set_name("Auto Arima")
-            arima_predictor.fit(self, time, values)
-        except (RuntimeWarning):
-            self.set_status(-1)
-
         
 class es_predictor(predictor_class):
     def __init__(self, dictionary):
-        predictor_class.__init__(self, "exponential smoothing", dictionary)
+        predictor_class.__init__(self, "exponential-smoothing", dictionary)
 
     def fit(self, time, values):
         try:
@@ -256,23 +223,6 @@ class es_predictor(predictor_class):
             self.set_status(1)
         except (TypeError, ValueWarning, ConvergenceWarning, ValueError):
             self.set_status(-1)
-
-
-class uc_predictor(predictor_class):
-    def __init__(self, dictionary):
-        predictor_class.__init__(self, "Unobserved Components", dictionary)
-
-    def fit(self, time, values):
-        try:
-            dataframe = self.get_dataframe(time, values)
-            model = UC(endog = dataframe, **self.dictionary)
-            fit = model.fit(disp = 0)
-            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
-            self.set_function(function)
-            self.set_status(1)
-        except (TypeError, RuntimeWarning, ConvergenceWarning, SpecificationWarning, ValueWarning, LinAlgError, ValueError):
-            self.set_status(-1)
-
 
 class prophet_predictor(predictor_class):
     def __init__(self, dictionary):
@@ -291,6 +241,58 @@ class prophet_predictor(predictor_class):
             self.set_status(1)
         except TypeError:
             self.set_status(-1)
+
+                 
+class arima_predictor(predictor_class):
+    def __init__(self, dictionary):
+        predictor_class.__init__(self, "arima", dictionary)
+
+    def fit(self, time, values):
+        try:
+            dataframe = self.get_dataframe(time, values)
+            model = arima(endog = dataframe, **self.dictionary)
+            fit = model.fit(disp = 0)
+            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
+            self.set_function(function)
+            self.set_status(1)
+        except (UserWarning, RuntimeWarning, LinAlgError, TypeError, ValueError, ConvergenceWarning):
+            self.set_status(-1)
+
+            
+class auto_arima_predictor(arima_predictor):
+    def __init__(self, dictionary):
+        predictor_class.__init__(self, "auto arima", dictionary)
+
+    def fit(self, time, values):
+        try:
+            model = auto_arima(values.data, **self.dictionary)
+            order = model.order
+            seasonal_order = model.seasonal_order
+            dictionary = {"order": order, "seasonal_order": seasonal_order}
+            arima_predictor.__init__(self, dictionary)
+            self.set_name("Auto-Arima")
+            arima_predictor.fit(self, time, values)
+        except (RuntimeWarning):
+            self.set_status(-1)
+
+
+class uc_predictor(predictor_class):
+    def __init__(self, dictionary):
+        predictor_class.__init__(self, "unobserved-components", dictionary)
+
+    def fit(self, time, values):
+        try:
+            dataframe = self.get_dataframe(time, values)
+            model = UC(endog = dataframe, **self.dictionary)
+            fit = model.fit(disp = 0)
+            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
+            self.set_function(function)
+            self.set_status(1)
+        except (TypeError, RuntimeWarning, ConvergenceWarning, SpecificationWarning, ValueWarning, LinAlgError, ValueError):
+            self.set_status(-1)
+
+
+
     
             
 class cubist_predictor(predictor_class):

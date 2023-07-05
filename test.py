@@ -4,8 +4,8 @@ import forecast as fr
 # name = "monthly"
 # name = "weekly"
 #name = "weekly2"
-#name = "salford"
-# name = "car"
+name = "salford"
+name = "car"
 name = "plu"
 
 data = fr.read_data(name, header = 0)
@@ -15,86 +15,73 @@ data.set_unit("repairs")
 data.set_forecast_length(12)
 # data /= (10 ** 6)
 
-
 # SETTINGS
-fr.simple_print(0)
+#fr.simple_print(1)
+fr.set_screen_default_size(1024, 768)
 data.backup()
 log = 1
 
-data.plot()
+# INITIAL PLOT
+#data.plot()
 
 # AUTO
-#data.auto(log = log)
-
+data.auto(trend = True, season = True, prediction = True, log = True, save = True)
+# trend: False for no trend, True to automatically find it, and integer for specific value
+# season: False for no season, True to automatically find it, and integer for specific value ar a list of integers
+# prediction: False for no prediction, True to automatically find best exponential smoothing, and integer for specific exponential smoothing ar the string "deep" to find all possible best predictors (es, prophet, arima, uc, cubist if available) and combine them with weighted average (depending on their error)
 
 # SIMULATE
-#data.simulate(trend = 10, period = 10, noise = 2).plot()
+#data.simulate(trend = 2, season = 52, noise = 0.1)#.plot()
+
+# TURN WHITE
+#data.white()#.plot()
 
 # SMOOTH
-#data.smooth(length = 5)
+#data.smooth(length = 5)#.plot()
 
 # MANUAL TREND
-#data.update_trend(0)
+#data.update_trend(2)
 
 # FIND TREND
-#trend = data.find_trend(method = "test", test_length = None, log = log)
-#data.update_trend(trend)
+#data.find_trend(order = 15, test_length = None, method = "test", apply_result = True, log = log)
 
 # MANUAL SEASON
-#data.update_season(52, detrend = None)
+#data.update_season(52, detrend = None)#.plot()
 
-# FIND SEASON
-# threshold = 2
-# seasons_acf = data.find_seasons(detrend = None, source = "acf", threshold = threshold, plot = 1, log = log)
-# seasons_fft = data.find_seasons(detrend = 3, source = "fft", threshold = threshold, plot = 0, log = log)
-# seasons = seasons_acf + seasons_fft
-# data.update_season(*seasons, detrend = None)
+# FIND SEASONS and study them
+# data.find_seasons(detrend = None, source = "acf", threshold = 2.5, apply_result = False, plot = 1, log = log)
+# data.find_seasons(detrend = 3, source = "fft", threshold = 1.5, apply_result = False, plot = 1, log = log)
 
+# FIND SEASON QUICKLY
+#seasons = data.all_seasons(detrend = 4, threshold = 2.5, log = log)
+#data.update_season(*seasons, detrend = 4)
 
-# NAIVE PREDICTOR
-#data.use_naive('zero')
+# FIND BEST PREDICTOR
+# data.find_naive(test_length = None, method = "Data", apply_result = True, log = log)
+# data.find_es(seasons = data.all_seasons(threshold = 1.5), test_length = None, method = "Data", apply_result = True, log = log)
+# data.find_prophet(order = 10, test_length = None, method = "Data", apply_result = True, log = log)
+#data.find_arima(seasons = data.all_seasons(threshold = 2.8), order = 1, test_length = None, method = "Data", apply_result = True, log = True)
+#data.find_uc(seasons = data.all_seasons(threshold = 2.8), order = 1, test_length = None, method = "Data", apply_result = True, log = True)
+#data.find_cubist(order = 10, test_length = None, method = "Data", apply_result = True, log = log)
 
+# ADD PREDICTOR MANUALLY
+#data.add_naive(level = 'zero', weight = 1)
+#data.add_es(seasonal_periods = 52, weight = 1)
+# data.add_prophet(yearly_seasonality = True, n_changepoints = 12, weight = 1)
+# #data.add_auto_arima(m = 1, max_order = 2, weight = 1)
+# data.add_arima(order = (1, 0, 1), seasonal_order = (0, 1, 0, 0), weight = 1)
+# data.add_uc(level = "random walk", cycle = True, seasonal = 12, autoregressive = 1, stochastic_cycle = True, weight = 1)
+#data.add_cubist(n_committees = 0, neighbors = 1, composite = True, unbiased = True, weight = 1)
 
-# EXPONENTIAL SMOOTHING 
-#data.use_es(period = 52)
+# LOG 
+#data.log(test_length = None) if log else None
 
-# FIND EXPONENTIAL SMOOTHING 
-#es_seasons = data.all_seasons()
-#data.find_es(es_seasons, method = "Data", test_length = None, log = log)
+# PLOT
+#data.plot()
 
-# PROPHET
-#data.use_prophet(seasonality = True, points = 5)
+# ATOMATICALLY PLOT and SAVE FORECASTED and EXTENDED RESULTS
+#data.save_all()
 
-# FIND PROPHET
-#data.find_prophet(order = 10, method = "Data", test_length = None, log = log)
-
-# AUTO ARIMA
-#data.use_auto_arima(period = 52, max_order = 1)
-
-# ARIMA
-#data.use_arima(0,1,1, 1,0,0, 52)
-
-# FIND ARIMA
-#arima_periods = data.all_seasons(threshold = 2.8)
-#data.find_arima(arima_periods, method = "Data", test_length = None, order = 1, log = log)
-
-# UNOBSERVED COMPONENTS
-#data.use_uc(level = 0, cycle = True, seasonal = 12, autoregressive = 1, stochastic = True)
-
-# FIND UNOBSERVED COMPONENTS
-#uc_periods = data.all_seasons(threshold = 2.8)
-#data.find_uc(uc_periods, method = "Data", test_length = None, order = 0, log = log)
-
-# CUBIST
-#data.use_cubist(committees = 1, neighbors = 3, composite = True, unbiased = True)
-
-# FIND CUBIST
-#data.find_cubist(order = 10, method = "Data", test_length = None, log = log)
-
-# LOG and PLOT
-# data.log() if log else None
-# data.log_split() if log else None
-# data.plot()
-
-# FORECAST and SAVE RESULTS
-#data.save_forecast()
+# MANUALLY PLOT and SAVE FORECASTED and EXTENDED RESULTS
+#data.forecast().plot().save_plot(log = log).save_background(log = log)
+#data.extend().plot().save_plot(log = log)

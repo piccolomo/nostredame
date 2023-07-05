@@ -74,21 +74,22 @@ class study_class():
         length = self.get_length() + nl
         rms_length = self.data._values.pad_length
         title = ' ' * (4 + sl) +  self.get_title() + nl
-        mape = 'mape' + sp + self.get_mape() + ' [%]' + sp + nl
+        rms = 'rms ' + sp + self.get_rms() + ' ' + self.data.get_unit(True) + nl
         ir2 = 'ir2 ' + sp + self.get_ir2() + ' [%]' + sp + nl
-        rms = 'rms ' + sp + self.get_rms() + ' ' + self.data.get_unit(True)
-        self._label_long = length + title + mape + ir2 + rms
+        mape = 'mape' + sp + self.get_mape() + ' [%]' + sp + nl
+        self._label_long = rms + ir2 + mape + title + length
 
     def get_length(self):
         train_length, test_length = percentage(self.train.l, self.data.l), percentage(self.test.l, self.data.l)
-        return "test size: " + pad_round(test_length, 5) + "%"#" = " + str(self.test.l)
-
+        return pad("test length", 11) + ' ' + str(self.test.l) + ' (' + pad_round(test_length, 5) + "% of train length)"
+    
     def get_title(self):
         datas = ["data",  "train", "test", "Data"]
         return sp.join([pad(el, self.pad_length) for el in datas])
         
     def get_mape(self):
         mape = [pad(el._quality.get_mape(), self.pad_length) for el in self.datas]
+        mape[2] = bold(mape[2])
         mape = sp.join(mape)
         return mape
 

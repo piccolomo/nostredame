@@ -1,6 +1,6 @@
 from forecast.trend import trend_class, remove_trend, to_time_function, generate_trend
 from forecast.string import pad, enclose_circled, bold, str_round
-from forecast.plot import get_acf, get_fft_inter, plt, set_plot
+from forecast.plot import get_acf, get_fft_inter, plt, set_plot_window
 from scipy.signal import find_peaks 
 import numpy as np
 
@@ -60,21 +60,21 @@ class season_class(trend_class):
 # Season Utilities
 transpose = lambda matrix: list(map(list, zip(*matrix)))
 
-def get_season_function(data, period):
-    season = get_partial_season(data, period)
-    function = lambda el: season[el % period]
+def get_season_function(data, season):
+    data = get_partial_season(data, season)
+    function = lambda el: data[el % season]
     return function
 
-def get_season(data, period):
-    return repeat(get_partial_season(data, period), len(data))
+def get_season(data, season):
+    return repeat(get_partial_season(data, season), len(data))
 
-def deseason(data, period):
-    data = np.array(data) - get_season(data, period)
-    #data = moving_average(data, period)
+def deseason(data, season):
+    data = np.array(data) - get_season(data, season)
+    #data = moving_average(data, season)
     return data
 
-def get_partial_season(data, period):
-    season = [np.mean(data[i : : period]) for i in range(period)]
+def get_partial_season(data, season):
+    season = [np.mean(data[i : : season]) for i in range(season)]
     return np.array(season) #- np.mean(season)
 
 def repeat(data, length):
@@ -102,7 +102,7 @@ def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = 
     data = remove_trend(data, detrend_order)
     
     acf_data = get_acf(data)
-    peaks_data = acf_data if use_acf else get_fft_inter(data)
+    peaks_data = acf_data if use_acf else get_fft_inter(acf_data)
 
     lower, upper = 2, length // (2 if use_acf else 3)
     x = range(lower, upper + 1)
@@ -113,39 +113,39 @@ def find_seasons(data, detrend_order = None, source = "acf", log = True, plot = 
     peaks = get_peaks(peaks_data, threshold, 1)
 
     lp = len(peaks)
-    (periods, heights, _) = transpose(peaks) if lp != 0 else [[]] * 3
-    periods = [el + lower for el in periods]
+    (seasons, heights, _) = transpose(peaks) if lp != 0 else [[]] * 3
+    seasons = [el + lower for el in seasons]
 
     if log:
         print(bold("searching seasons") + " in " + source)
         print("detrend order", detrend_order) if log else None
         for i in range(lp):
-            period =  bold(pad(str(periods[i]), 3))
+            season =  bold(pad(str(seasons[i]), 3))
             height =  pad(str_round(heights[i], 1), 3)
-            print("period", bold(period), "height", height, "[stds]")
-    if log and lp == 0:
-        print("no peaks found: see ya!") if log else None
+            print("season", bold(season), "height", height, "[stds]")
+        if lp == 0:
+            print("no peaks found: see ya!") if log else None
 
     if plot:
-        set_plot()
+        set_plot_window()
         title = "AutoCorrelation Plot" if use_acf else "FFT Plot"
         plt.clf()
         plt.plot(x, peaks_data)
         plt.title(title)
         #plt.xscale("log") if not use_acf else None
-        for period in periods:
-            plt.axvline(x = period, c = "g", lw = 1)
+        for season in seasons:
+            plt.axvline(x = season, c = "g", lw = 1)
         plt.axhline(y = threshold, c = "r", lw = 1)
         plt.xlim(lower - 1, upper + 1)
         #plt.ylim(0, 1.05)
-        plt.xlabel("Period")
+        plt.xlabel("Season")
         plt.show(block = 0)
 
-    return periods
+    return seasons
 
-def generate_season(period, amplitude, length, order = 4, noise = 1):
-    repeat = length // period + 1
-    signal = [generate_trend(0, amplitude, period, order, noise)] * repeat
+def generate_season(season, amplitude, length, order = 4, noise = 1):
+    repeat = length // season + 1
+    signal = [generate_trend(0, amplitude, season, order, noise)] * repeat
     signal = flatten(signal)
     return np.array(signal[ : length])
 

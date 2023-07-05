@@ -1,23 +1,14 @@
 from forecast.string import enclose_squared
-from forecast.platform import platform, get_screen_size
 from scipy.interpolate import interp1d as interpolate
+from matplotlib import rcParams as plot_parameters
 from statsmodels.tsa.stattools import acf
 from scipy.fft import rfft as rfft 
 import matplotlib.pyplot as plt
-from matplotlib import rcParams as plot_parameters
+from textwrap import wrap
 from math import ceil
 import numpy as np
 import os
 
-
-
-w, h = get_screen_size()
-tbh = round(0.08 * h) # toolbar height
-pw, ph = 3 * w // 4, 3 * (h - tbh) // 4
-
-width_data = round(1.2  * w / 1600)
-width_back = round(1.00 * w / 1600)
-font_size = round(pw / 90)
 
 color_data = "steelblue"
 #color_back = "sienna"
@@ -25,10 +16,8 @@ color_back = "forestgreen"
 
 
 class plot_class():
-    def __init__(self):
-        pass
-
     def plot(self):
+        set_plot_window()
         self._update_label()
         x, y = self.get_time(), self.get_data()
         yb = self.get_background()
@@ -37,33 +26,39 @@ class plot_class():
         unit = enclose_squared(self.get_unit())
         xlabel = "Time" #+ enclose(self.time.form.replace('%', ''))
         ylabel = name + " " + unit
+        label_back = '\n'.join(wrap(self._label_short, wrap_length))
 
-        set_plot(name)
+        plt.clf()
         plt.plot(x, y, c = color_data, lw = width_data, label = name)
-        plt.plot(x, yb, c = color_back, lw = width_back, label = self._label_short) if self.background_ok else None
+        plt.plot(x, yb, c = color_back, lw = width_back, label = label_back) if self.background_ok else None
 
+        plt.title(name)
         plt.ylabel(ylabel)
         plt.legend()
-        show()
+        plt.pause(0.01); plt.show(block = 0)
         return self
 
     def plot_acf(self):
         title = "Autocorrelation Plot of " + self._residuals_label.title()
-        set_plot(title)
+        set_plot_window()
+        plt.clf()
         plt.plot(get_acf(self.get_residuals()), c = color_data, lw = width_data)
+        plt.title(title)
         plt.xlabel("Period")
         #plt.ylabel("ACF")
-        show()
+        plt.pause(0.01); plt.show(block = 0)
         return self
 
     def plot_fft(self):
         title = "Fourier Plot of " + self._residuals_label.title()
-        set_plot(title)
+        set_plot_window()
+        plt.clf()
         plt.plot(get_fft_inter(self.get_residuals()), c = color_data, lw = width_data)
+        plt.title(title)
         #plt.yscale("log")
         plt.xlabel("Period")
         #plt.ylabel("FFT")
-        show()
+        plt.pause(0.01); plt.show(block = 0)
         return self
 
     def save_plot(self, name = None, log = True):
@@ -73,32 +68,39 @@ class plot_class():
         print("plot saved in", path) if log else None
         return self
 
+def set_plot_window():
+    from forecast.platform import get_screen_size
+    width, height = get_screen_size()
+    global width_data, width_back, wrap_length
     
-def set_plot(title):
+    toolbar_height = round(0.08 * height) # toolbar height
+    plot_width = 3 * width // 4
+    plot_height = 3 * (height - 0 * toolbar_height) // 4
+
+    font_size = round(plot_width / 120)
+    width_data = plot_width / 1400
+    width_back = plot_width / 1500
+    wrap_length = round(0.6 * plot_width / font_size)
+    
     plot_parameters['toolbar'] = 'None'
     fig = plt.figure(constrained_layout = True)
-    style = plt.style.available[-2]
-    plt.style.use(style)
-    plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
-
-    mngr = plt.get_current_fig_manager();
-    mngr.set_window_title(title)
-
+        
+    mngr = plt.get_current_fig_manager()
     try:
-        size_temp = "{}x{}+{}+{}".format(pw//2, ph//2, 0, h - ph - tbh)
-        mngr.window.geometry(size_temp); show()
-        size = "{}x{}+{}+{}".format(pw, ph, 0, h - ph - tbh)
-        mngr.window.geometry(size); show()
+        y = height - plot_height - toolbar_height
+        size_temp = "{}x{}+{}+{}".format(plot_width // 2, plot_height // 2, 0, y)
+        mngr.window.geometry(size_temp); plt.pause(0.01); plt.show(block = 0)
+        size = "{}x{}+{}+{}".format(plot_width, plot_height, 0, y)
+        mngr.window.geometry(size)
     except:
         print("Unable to set plot window size using window.geometry()")
 
-    plt.clf()
-    plt.title(title)
-    
-
-def show():
-    plt.pause(0.01);
-    plt.show(block = 0)
+    # Window Style
+    style = plt.style.available[-2]
+    plt.style.use(style)
+    plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif"})
+    mngr = plt.get_current_fig_manager()
+    mngr.set_window_title("Forecast Plot")
 
 get_fft = lambda data, p = 1: np.abs(rfft(data)) ** p
 

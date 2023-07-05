@@ -54,7 +54,7 @@ def dictionary_to_string(dictionary):
 delete_line = lambda: sys.stdout.write(delete_line_escape)
 def indicator(i, tot): # i goes from 1 to tot
     delete_line() if i != 1 else None 
-    print(pad_round(percentage(i, tot), 5) + " %")
+    print("progress:", pad_round(percentage(i, tot), 5) + " %")
 
     
 # Extract Numbers from String
