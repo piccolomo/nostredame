@@ -10,9 +10,19 @@ import numpy as np
 import os
 
 
-color_data = "steelblue"
-#color_back = "sienna"
-color_back = "forestgreen"
+#color_data, color_back = "saddlebrown", "steelblue"
+color_data, color_back = "black", "darkorchid"
+# # "darkblue"
+# color_data = "black"
+# color_data = "navy"
+# color_data = "teal"
+# color_data = "steelblue"
+# color_data = 
+# #color_back = "sienna"
+# color_back = "limegreen"
+# color_back = "darkorchid"
+# color_back = 
+
 
 
 class plot_class():
@@ -78,8 +88,8 @@ def set_plot_window():
     plot_height = 3 * (height - 0 * toolbar_height) // 4
 
     font_size = round(plot_width / 120)
-    width_data = plot_width / 1400
-    width_back = plot_width / 1500
+    width_data = plot_width / 1100
+    width_back = plot_width / 1100
     wrap_length = round(0.6 * plot_width / font_size)
     
     plot_parameters['toolbar'] = 'None'

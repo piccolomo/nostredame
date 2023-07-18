@@ -24,7 +24,9 @@ Manage Repo
 - modify last commit message: git commit -m "new message" --amend
 - check commit history with file modifications: git log -p
 - jump to a previous commit (no change to working files): git reset commit_code
+- jump to a previous commit (with changes to working files): git checkout commit_code
 - undo reset: git reset HEAD@{1}
+- undo checkout: git switch -
 - check history of commits and others: git reflog
 
 

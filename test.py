@@ -22,13 +22,14 @@ data.backup()
 log = 1
 
 # INITIAL PLOT
-#data.plot()
+data.plot()
 
 # AUTO
 data.auto(trend = True, season = True, prediction = True, log = True, save = True)
+#data.auto(trend = 1, season = False, prediction = False, log = True, save = 1it)
 # trend: False for no trend, True to automatically find it, and integer for specific value
-# season: False for no season, True to automatically find it, and integer for specific value ar a list of integers
-# prediction: False for no prediction, True to automatically find best exponential smoothing, and integer for specific exponential smoothing ar the string "deep" to find all possible best predictors (es, prophet, arima, uc, cubist if available) and combine them with weighted average (depending on their error)
+# season: False for no season, True to automatically find it, and integer for specific value or a list of integers
+# prediction: False for no prediction, True to automatically find best exponential smoothing, and integer for specific exponential smoothing or the string "deep" to find all possible best predictors (es, prophet, arima, uc, cubist if available) and combine them with weighted average (depending on their error)
 
 # SIMULATE
 #data.simulate(trend = 2, season = 52, noise = 0.1)#.plot()
@@ -38,6 +39,10 @@ data.auto(trend = True, season = True, prediction = True, log = True, save = Tru
 
 # SMOOTH
 #data.smooth(length = 5)#.plot()
+
+# PLOT ACF or FFT if needed
+#data.plot_acf()
+#data.plot_fft()
 
 # MANUAL TREND
 #data.update_trend(2)
