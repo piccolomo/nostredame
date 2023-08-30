@@ -9,7 +9,7 @@ from forecast.study import study_class
 from forecast.best import find_best_class
 
 from forecast.string import enclose_circled, nl, enclose_squared, bold, nl
-from forecast.path import read_time_data, correct_path, join_paths, output_folder
+from forecast.path import read_time_data, read_time_dataframe, correct_path, join_paths, output_folder
 from forecast.dictionary import dictionary
 from .platform import platform, set_screen_default_size
 
@@ -21,6 +21,9 @@ def read_data(path, header = True, form = None):
     time, values = read_time_data(path, header, form)
     return data_class(time, values)
 
+def read_dataframe(frame, time_name = None, values_name = None):
+    time, values = read_time_dataframe(frame, time_name, values_name)
+    return data_class(time, values)
 
 class data_class(copy_class, backup_class, plot_class, find_best_class):
     def __init__(self, time = [], values = []):

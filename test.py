@@ -17,15 +17,15 @@ data.set_forecast_length(12)
 
 # SETTINGS
 #fr.simple_print(1)
-fr.set_screen_default_size(1024, 768)
-data.backup()
+#fr.set_screen_default_size(1024, 768)
+#data.backup()
 log = 1
 
 # INITIAL PLOT
-data.plot()
+#data.plot()
 
 # AUTO
-data.auto(trend = True, season = True, prediction = True, log = True, save = True)
+#data.auto(trend = True, season = True, prediction = True, log = True, save = True)
 #data.auto(trend = 1, season = False, prediction = False, log = True, save = 1it)
 # trend: False for no trend, True to automatically find it, and integer for specific value
 # season: False for no season, True to automatically find it, and integer for specific value or a list of integers

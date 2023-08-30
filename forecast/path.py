@@ -64,6 +64,15 @@ def read_time_data(path, header = True, form = None):
     values = values_class(values)
     return time, values
 
+def read_time_dataframe(frame, time_name = None, values_name = None):
+    time = frame.index if time_name is None else frame[time_name]
+    values = frame.iloc[:, -1] if values_name is None else frame[values_name]
+    form = '%d/%m/%Y'
+    time = time.strftime(form)
+    time = time_class(time, form)
+    values = values_class(values)
+    return time, values
+
 
 # def parts(path):
 #     path  = correct(path)
