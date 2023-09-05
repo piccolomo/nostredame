@@ -126,8 +126,10 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         trend = self._trend.get_data()
         return trend if is_like_list(trend) else np.array([trend] * self.length)
 
- 
-        
+    def get_trend_dataframe(self):
+        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_trend()})
+
+    
     def update_season(self, *seasons, detrend = None):
         self._fit_season(*seasons, detrend = detrend)
         self._update_season_data()
@@ -152,6 +154,10 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
     def get_season(self):
         season = self._season.get_data()
         return season if is_like_list(season) else np.array([season] * self.length)
+
+    def get_season_dataframe(self):
+        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_season()})
+    
     
     def correct_detrend_order(self, detrend = None):
         trend_order = self._trend.order
@@ -181,6 +187,12 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
     def zero_prediction(self):
         self._prediction.zero()
         return self
+
+    def get_prediction(self):
+        return self._prediction.get_data()
+
+    def get_prediction_dataframe(self):
+        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_prediction()})
 
         
     add_naive = lambda self, level = 'mean', weight = 1: self.add_predictor("naive", dictionary.naive.default(level), weight = weight) 
@@ -252,6 +264,9 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         
     def get_treason(self):
         return self.get_trend() + self.get_season()
+    
+    def get_treason_dataframe(self):
+        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_treason()})
 
     def get_background(self):
         yb = self.get_treason() + self._prediction.get_data()

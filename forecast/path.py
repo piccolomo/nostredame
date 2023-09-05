@@ -3,6 +3,7 @@ from forecast.time import time_class, time_form
 
 from forecast.string import get_numerical, strings_to_numbers, form_to_input
 import os
+import pandas as pd
 
 
 # Path Manipulation
@@ -68,6 +69,7 @@ def read_time_dataframe(frame, time_name = None, values_name = None):
     time = frame.index if time_name is None else frame[time_name]
     values = frame.iloc[:, -1] if values_name is None else frame[values_name]
     form = '%d/%m/%Y'
+    time = pd.DatetimeIndex(time)
     time = time.strftime(form)
     time = time_class(time, form)
     values = values_class(values)
