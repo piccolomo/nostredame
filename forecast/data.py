@@ -7,22 +7,22 @@ from forecast.quality import quality_class, is_like_list
 from forecast.values import values_class
 from forecast.study import study_class
 from forecast.best import find_best_class
+from forecast.time import time_class
 
 from forecast.string import enclose_circled, nl, enclose_squared, bold, nl
-from forecast.path import read_time_data, read_time_dataframe, correct_path, join_paths, output_folder
+from forecast.path import read_table, correct_path, join_paths, output_folder
 from forecast.dictionary import dictionary
 from .platform import platform, set_screen_default_size
 
 import pandas as pd
 import numpy as np
 
-
-def read_data(path, header = True, form = None):
-    time, values = read_time_data(path, header, form)
-    return data_class(time, values)
-
-def read_dataframe(frame, time_name = None, values_name = None):
-    time, values = read_time_dataframe(frame, time_name, values_name)
+def read_data(path,  delimiter = ",", header = False, form = None, string_function = None):
+    data = read_table(path, delimiter, header)
+    values = [float(el[-1]) for el in data]
+    time = [el[0] for el in data]
+    time = time_class(time, form, string_function)
+    values = values_class(values)
     return data_class(time, values)
 
 class data_class(copy_class, backup_class, plot_class, find_best_class):
@@ -90,7 +90,7 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         return self._values.data
 
     def get_dataframe(self):
-        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_data()})
+        return pd.DataFrame(index = self._time.datetime_pandas, data = {'values': self.get_data()})
 
     
     def set_forecast_length(self, length = None):
@@ -127,7 +127,7 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         return trend if is_like_list(trend) else np.array([trend] * self.length)
 
     def get_trend_dataframe(self):
-        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_trend()})
+        return pd.DataFrame(index = self._time.datetime_pandas, data = {'values': self.get_trend()})
 
     
     def update_season(self, *seasons, detrend = None):
@@ -156,7 +156,7 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         return season if is_like_list(season) else np.array([season] * self.length)
 
     def get_season_dataframe(self):
-        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_season()})
+        return pd.DataFrame(index = self._time.datetime_pandas, data = {'values': self.get_season()})
     
     
     def correct_detrend_order(self, detrend = None):
@@ -192,7 +192,7 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         return self._prediction.get_data()
 
     def get_prediction_dataframe(self):
-        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_prediction()})
+        return pd.DataFrame(index = self._time.datetime_pandas, data = {'values': self.get_prediction()})
 
         
     add_naive = lambda self, level = 'mean', weight = 1: self.add_predictor("naive", dictionary.naive.default(level), weight = weight) 
@@ -266,7 +266,7 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         return self.get_trend() + self.get_season()
     
     def get_treason_dataframe(self):
-        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_treason()})
+        return pd.DataFrame(index = self._time.datetime_pandas, data = {'values': self.get_treason()})
 
     def get_background(self):
         yb = self.get_treason() + self._prediction.get_data()
@@ -280,7 +280,7 @@ class data_class(copy_class, backup_class, plot_class, find_best_class):
         return self
         
     def get_background_dataframe(self):
-        return pd.DataFrame(index = self._time.pandas_index, data = {'values': self.get_background()})
+        return pd.DataFrame(index = self._time.datetime_pandas, data = {'values': self.get_background()})
     
     def save_background(self, name = None, log = True):
         path = self._get_path(name) + ".csv"

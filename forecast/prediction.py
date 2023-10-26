@@ -187,7 +187,7 @@ class predictor_class(copy_class):
         self.label_long = status + self.name.title() + dictionary
 
     def get_dataframe(self, time, values):
-        return pd.DataFrame(index = time.pandas_index, data = {'values': values.data})
+        return pd.DataFrame(index = time.datetime_pandas, data = {'values': values.data})
 
     def __mul__(self, constant):
         new = self.copy()
@@ -218,7 +218,8 @@ class es_predictor(predictor_class):
             dataframe = self.get_dataframe(time, values)
             model = ES(endog = dataframe, **self.dictionary)
             fit = model.fit()
-            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
+            #function = lambda time: np.array([fit.predict(time.pandas_index[i], time.pandas_index[i])[0] for i in range(time.length)])
+            function = lambda time: fit.predict(time.datetime_pandas[0], time.datetime_pandas[-1]).to_numpy()
             self.set_function(function)
             self.set_status(1)
         except (TypeError, ValueWarning, ConvergenceWarning, ValueError):
@@ -236,7 +237,7 @@ class prophet_predictor(predictor_class):
             dataframe = self.get_dataframe(time, values)
             model = prophet(**self.dictionary)
             fit = model.fit(dataframe)
-            function = lambda time: fit.predict(pd.DataFrame(data = {'ds': time.pandas_index})).yhat.to_numpy()
+            function = lambda time: fit.predict(pd.DataFrame(data = {'ds': time.datetime_pandas})).yhat.to_numpy()
             self.set_function(function)
             self.set_status(1)
         except TypeError:
@@ -252,7 +253,7 @@ class arima_predictor(predictor_class):
             dataframe = self.get_dataframe(time, values)
             model = arima(endog = dataframe, **self.dictionary)
             fit = model.fit(disp = 0)
-            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
+            function = lambda time: fit.predict(time.datetime_pandas[0], time.datetime_pandas[-1]).to_numpy()
             self.set_function(function)
             self.set_status(1)
         except (UserWarning, RuntimeWarning, LinAlgError, TypeError, ValueError, ConvergenceWarning):
@@ -285,7 +286,7 @@ class uc_predictor(predictor_class):
             dataframe = self.get_dataframe(time, values)
             model = UC(endog = dataframe, **self.dictionary)
             fit = model.fit(disp = 0)
-            function = lambda time: fit.predict(time.pandas_index[0], time.pandas_index[-1]).to_numpy()
+            function = lambda time: fit.predict(time.datetime_pandas[0], time.datetime_pandas[-1]).to_numpy()
             self.set_function(function)
             self.set_status(1)
         except (TypeError, RuntimeWarning, ConvergenceWarning, SpecificationWarning, ValueWarning, LinAlgError, ValueError):

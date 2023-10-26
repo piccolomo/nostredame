@@ -12,7 +12,7 @@ setup(
     author = "Savino Piccolomo",
     author_email = "piccolomo@gmail.com",
     name = 'forecast',
-    version='1.2.3',
+    version='1.3.0',
     description = 'forecasts',
     #long_description = README,
     #long_description_content_type = "text/markdown",  
@@ -21,6 +21,6 @@ setup(
     packages = find_packages(),
     python_requires = ">=3.10.0, <=3.11.4",
     #include_package_data = True,
-    install_requires = ["pandas >= 2.0.0", "numpy >= 1.24.0", "scipy >= 1.10.0", "matplotlib >= 3.7.0", "prophet >= 1.1.0", "pmdarima >= 2.0.0"],
+    #install_requires = ["pandas >= 2.0.0", "numpy >= 1.24.0", "scipy >= 1.10.0", "matplotlib >= 3.7.0", "prophet >= 1.1.0", "pmdarima >= 2.0.0"],
     classifiers = []
     )
