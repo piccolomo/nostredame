@@ -11,10 +11,6 @@ class copy_class():
         new.__dict__ = deepcopy(self.__dict__)
         return new
 
-    def _copy_from(self, new):
-        self.__dict__ = deepcopy(new.__dict__)
-        return self
-
 class backup_class():
     def __init__(self):
         self._set_empty_backup()
@@ -44,7 +40,6 @@ class backup_class():
 
     def _get_dict(self):
         d = self.__dict__
-        #d = {deepcopy(el): deepcopy(d[el])for el in d}
         d = deepcopy(d)
         d.pop("_backup")
         return d
@@ -58,4 +53,5 @@ class backup_class():
 
     def _get_initial_backup(self):
         return self._backup[initial]
+
 

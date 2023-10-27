@@ -77,30 +77,3 @@ class find_best_class():
         results = self._find_best(function_name = "add_es", arguments = arguments, test_length = test_length, method = method, log = log)
         self._apply_result("add_es", results, True, log) if apply_result else None
         return results
-    
-    def find_prophet(self, order = 10, test_length = None, method = "Data", apply_result = True, log = True):
-        arguments = dictionary.prophet.all(order)
-        results = self._find_best(function_name = "add_prophet", arguments = arguments, test_length = test_length, method = method, log = log)
-        self._apply_result("add_prophet", results, True, log) if apply_result else None
-        return results
-    
-    def find_arima(self, seasons = None, order = 1, test_length = None, method = "Data", apply_result = True, log = True):
-        seasons = self.all_seasons(threshold = 2.8) if seasons is None else seasons
-        arguments = dictionary.arima.all(seasons, order)
-        results =  self._find_best(function_name = "add_arima", arguments = arguments, test_length = test_length, method = method, log = log)
-        self._apply_result("add_arima", results, True, log) if apply_result else None
-        return results
-    
-    def find_uc(self, seasons = None, order = 1, test_length = None, method = "Data", apply_result = True, log = True):
-        seasons = self.all_seasons(threshold = 2.8) if seasons is None else seasons
-        arguments = dictionary.uc.all(seasons, order)
-        results =  self._find_best(function_name = "add_uc", arguments = arguments, test_length = test_length, method = method, log = log)
-        self._apply_result("add_uc", results, True, log) if apply_result else None
-        return results
-    
-    def find_cubist(self, order = 10, test_length = None, method = "Data", apply_result = True, log = True):
-        arguments = dictionary.cubist.all(order)
-        results =  self._find_best(function_name = "add_cubist", arguments = arguments, test_length = test_length, method = method, log = log)    
-        self._apply_result("add_cubist", results, True, log) if apply_result else None
-        return results
-

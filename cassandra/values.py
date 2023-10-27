@@ -1,16 +1,13 @@
-from cassandra.string import str_round, is_like_list
 from cassandra.backup import copy_class
 import numpy as np
-
 
 class values_class(copy_class):
     def __init__(self, data = []):
         self.set(data)
-        #self.sorted = False
         super().__init__()
         
     def set(self, data):
-        self.data = np.array(data) #if tl.is_like_list(data) else zero(self.length) + data
+        self.data = np.array(data)
         self.update_metrics()
         return self
 
@@ -18,20 +15,15 @@ class values_class(copy_class):
         self.length = self.l = len(self.data)
         self.max = max(self.data) if self.length > 0 else None
         self.min = min(self.data) if self.length > 0 else None
-        self.delta = self.max - self.min if self.length > 0 else None
+        self.span = self.max - self.min if self.length > 0 else None
         self.first = self.data[0] if self.length > 0 else None
         self.last = self.data[-1] if self.length > 0 else None
         self.mean = np.mean(self.data) if self.length > 0 else None
-        self.rms = rms(self.data) if self.length > 0 else None
+        self.rms = np.mean(np.array(self.data) ** 2) ** 0.5 if self.length > 0 else None
         self.std = np.std(self.data) if self.length > 0 else None
-        data = list(self.data) + [self.mean, self.std, self.rms]
-        self.pad_length = max([len(str_round(el, 2)) for el in data])
-
-    def __mul__(self, constant):
-        return self.copy().set(self.data * constant)
 
     def forecast(self, length):
-        return values_class([nan] * length)
+        return values_class([np.nan] * length)
 
     def append(self, values):
         data = np.concatenate((self.data, values.data))
@@ -47,16 +39,6 @@ class values_class(copy_class):
 
     def white(self):
         return self.set(np.random.normal(self.mean, self.std, self.length))
-
-
-# Utilities
-nan = np.nan
-rms = lambda data: np.mean(np.array(data) ** 2) ** 0.5
-has_nan = lambda data: any(np.isnan(data)) if is_like_list(data) else np.isnan(data)
-
-def mean(data, weights = None):
-    l = len(data); L = range(l)
-    nan_pos = [i for i in L if has_nan(data[i])]
-    data = [data[i] for i in L if i not in nan_pos]
-    weights = [weights[i] for i in L if i not in nan_pos] if weights is not None else None
-    return np.average(data, weights = weights, axis = 0) if len(data) > 0 else None
+       
+    def __mul__(self, constant):
+        return self.copy().set(self.data * constant)

@@ -2,8 +2,6 @@ from cassandra.values import rms, mean, has_nan
 from cassandra.backup import copy_class
 
 from cassandra.string import is_like_list, str_round, pad, nl, percentage
-#from sklearn.metrics import mean_absolute_percentage_error as mape
-#from sklearn.metrics import r2_score as r2
 
 import numpy as np
 
