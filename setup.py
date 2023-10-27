@@ -11,8 +11,8 @@ HERE = pathlib.Path(__file__).parent
 setup(
     author = "Savino Piccolomo",
     author_email = "piccolomo@gmail.com",
-    name = 'forecast',
-    version='1.3.0',
+    name = 'cassandra',
+    version='1.3.1',
     description = 'forecasts',
     #long_description = README,
     #long_description_content_type = "text/markdown",  

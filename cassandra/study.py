@@ -1,4 +1,4 @@
-from forecast.string import bold, pad, nl, percentage, pad_round
+from cassandra.string import bold, pad, nl, percentage, pad_round
 
 sl = 3
 sp = ' ' * sl

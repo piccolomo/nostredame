@@ -1,8 +1,8 @@
-from forecast.backup import copy_class
-from forecast.trend import none_function
-from forecast.values import mean
-from forecast.string import dictionary_to_string, enclose_circled, pad
-from forecast.platform import platform
+from cassandra.backup import copy_class
+from cassandra.trend import none_function
+from cassandra.values import mean
+from cassandra.string import dictionary_to_string, enclose_circled, pad
+from cassandra.platform import platform
 
 from statsmodels.tsa.statespace.structural import UnobservedComponents as UC
 from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES

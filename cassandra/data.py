@@ -1,17 +1,17 @@
-from forecast.backup import backup_class, copy_class
-from forecast.plot import plot_class
-from forecast.trend import trend_class, generate_trend
-from forecast.season import season_class, generate_season
-from forecast.prediction import prediction_class, zero
-from forecast.quality import quality_class, is_like_list
-from forecast.values import values_class
-from forecast.study import study_class
-from forecast.best import find_best_class
-from forecast.time import time_class
+from cassandra.backup import backup_class, copy_class
+from cassandra.plot import plot_class
+from cassandra.trend import trend_class, generate_trend
+from cassandra.season import season_class, generate_season
+from cassandra.prediction import prediction_class, zero
+from cassandra.quality import quality_class, is_like_list
+from cassandra.values import values_class
+from cassandra.study import study_class
+from cassandra.best import find_best_class
+from cassandra.time import time_class
 
-from forecast.string import enclose_circled, nl, enclose_squared, bold, nl
-from forecast.path import read_table, correct_path, join_paths, output_folder
-from forecast.dictionary import dictionary
+from cassandra.string import enclose_circled, nl, enclose_squared, bold, nl
+from cassandra.path import read_table, correct_path, join_paths, output_folder
+from cassandra.dictionary import dictionary
 from .platform import platform, set_screen_default_size
 
 import pandas as pd

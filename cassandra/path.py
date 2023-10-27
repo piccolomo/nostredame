@@ -1,7 +1,7 @@
-from forecast.values import values_class
-from forecast.time import time_class
+from cassandra.values import values_class
+from cassandra.time import time_class
 
-from forecast.string import get_numerical, strings_to_numbers, form_to_input
+from cassandra.string import get_numerical, strings_to_numbers, form_to_input
 import os
 import pandas as pd
 

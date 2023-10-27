@@ -1,7 +1,7 @@
-from forecast.values import rms, mean, has_nan
-from forecast.backup import copy_class
+from cassandra.values import rms, mean, has_nan
+from cassandra.backup import copy_class
 
-from forecast.string import is_like_list, str_round, pad, nl, percentage
+from cassandra.string import is_like_list, str_round, pad, nl, percentage
 #from sklearn.metrics import mean_absolute_percentage_error as mape
 #from sklearn.metrics import r2_score as r2
 

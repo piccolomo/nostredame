@@ -1,7 +1,7 @@
-from forecast.season import find_seasons
-from forecast.dictionary import dictionary
-from forecast.string import bold, indicator, pad
-from forecast.study import study_class
+from cassandra.season import find_seasons
+from cassandra.dictionary import dictionary
+from cassandra.string import bold, indicator, pad
+from cassandra.study import study_class
 
 
 class find_best_class():

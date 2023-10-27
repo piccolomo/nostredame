@@ -1,4 +1,4 @@
-from forecast.string import enclose_squared
+from cassandra.string import enclose_squared
 from scipy.interpolate import interp1d as interpolate
 from matplotlib import rcParams as plot_parameters
 from statsmodels.tsa.stattools import acf
@@ -79,7 +79,7 @@ class plot_class():
         return self
 
 def set_plot_window():
-    from forecast.platform import get_screen_size
+    from cassandra.platform import get_screen_size
     width, height = get_screen_size()
     global width_data, width_back, wrap_length
     

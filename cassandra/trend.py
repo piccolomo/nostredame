@@ -1,5 +1,5 @@
-from forecast.backup import copy_class
-from forecast.string import pad, enclose_circled
+from cassandra.backup import copy_class
+from cassandra.string import pad, enclose_circled
 import numpy as np
 
 

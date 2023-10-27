@@ -1,5 +1,5 @@
-from forecast.string import str_round, is_like_list
-from forecast.backup import copy_class
+from cassandra.string import str_round, is_like_list
+from cassandra.backup import copy_class
 import numpy as np
 
 

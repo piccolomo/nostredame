@@ -1,4 +1,4 @@
-from forecast.backup import copy_class
+from cassandra.backup import copy_class
 from datetime import datetime as dt
 from datetime import timedelta as td
 from dateutil.relativedelta import relativedelta
