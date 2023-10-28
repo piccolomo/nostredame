@@ -20,8 +20,8 @@ class prediction_class(copy_class):
     def set_function(self, function = None):
         self.predictor.set_function(function) if self.predictor is not None else None
 
-    def set_data(self, data = []):
-        self.data = np.array(data)
+    def set_data(self, data = None):
+        self.data = None if data is None else np.array(data)
 
     def update_label(self):
         self.predictor.update_label() if self.predictor is not None else None
@@ -42,11 +42,14 @@ class prediction_class(copy_class):
 
     def predict(self, time):
         return self.predictor.function(time) if self.predictor is not None else None
-    
 
+    def update_label(self):
+        self.predictor.update_label() if self.predictor is not None else None
+        self.label = self.predictor.label if self.predictor is not None else None
+    
     def project(self, time):
         new = self.copy()
-        new.update(time)
+        new.update_data(time)
         return new
 
     def __mul__(self, constant):
@@ -78,7 +81,7 @@ class predictor_class(copy_class):
         self.status = status # -1 = Failed, 0 = Non Fitted, 1 = Fitted
 
     def update_label(self):
-        status = "Failed " if self.status == -1 else "Non Fitted " if self.status == 0 else ""
+        status = "Failed " if self.status == -1 else "Not-Fitted-" if self.status == 0 else ''
         self.label = status + self.name.title() + dictionary_to_string(self.dictionary)
         
     def __mul__(self, constant):
@@ -108,10 +111,11 @@ class es_predictor(predictor_class):
         try:
             model = ES(endog = data.values.data, **self.dictionary)
             fit = model.fit()
-            function = lambda time: fit.predict(data.time.index[0], data.time.index[-1])
+            function = lambda time: fit.predict(time.index[0], time.index[-1])
             self.set_function(function)
             self.set_status(1)
         except (TypeError, ValueWarning, ConvergenceWarning, ValueError):
+            print("Carefull!")
             self.set_status(-1)
 
 

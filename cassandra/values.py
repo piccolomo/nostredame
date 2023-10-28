@@ -23,7 +23,7 @@ class values_class(copy_class):
         self.std = np.std(self.data) if self.length > 0 else None
 
     def forecast(self, length):
-        return values_class([np.nan] * length)
+        return values_class(np.zeros(length) * np.nan)
 
     def append(self, values):
         data = np.concatenate((self.data, values.data))

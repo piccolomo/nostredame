@@ -13,14 +13,14 @@ class season_class(trend_class):
 
     def fit(self, data, periods, detrend):
         periods = [p for p in periods if p not in [0, 1]]
-        self.fit_function(data.time, data.values, periods, detrend)
+        self.fit_function(data, periods, detrend)
         self.update_data(data.time)
         self.set_periods(periods)
         self.set_order(detrend)
         self.update_label()
       
-    def fit_function(self, time, values, periods, detrend = None):
-        y = values.data.copy()
+    def fit_function(self, data, periods, detrend = None):
+        y = data.values.data.copy()
         y = remove_trend(y, detrend)
         functions = []
         for period in periods:

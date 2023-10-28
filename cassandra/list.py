@@ -5,7 +5,8 @@ import numpy as np
 
 # Time Utilities
 to_time_class_function = lambda function: (lambda time: np.array([function(el) for el in time.index]))
-
+nan_function = lambda el: np.nan
+nan_time_class_function = to_time_class_function(nan_function)
 
 # Trend Utilities
 def get_trend_function(x, y, order = 2):
@@ -19,9 +20,9 @@ def get_trend_function(x, y, order = 2):
 def get_trend_data(data, order = 2):
     x = range(len(data))
     function = get_trend_function(x, data, order)
-    return np.vectorize(function)(data)
+    return np.vectorize(function)(x)
     
-remove_trend = lambda data, order = 2: data if order is None else data - get_trend_data(data, order)
+remove_trend = lambda data, order = 2: data if order is None else (data - get_trend_data(data, order))
 
 
 # Season Utilities
@@ -40,7 +41,7 @@ get_acf = lambda data: acf(data, nlags = len(data))
 
 from cassandra.string import bold
 
-def find_seasons(data, trend = 2, log = True, plot = True, threshold = 1):
+def find_seasons(data, threshold = 1, trend = 2, log = True):
     l = len(data)
     lower, upper = 2, l // 2
     data = remove_trend(data, trend)
@@ -51,15 +52,9 @@ def find_seasons(data, trend = 2, log = True, plot = True, threshold = 1):
     positions, properties = find_peaks(data, height = threshold, width = 0, rel_height = 0.5)
     positions += lower
     heights = properties["peak_heights"]
-    lp = len(positions)
-    if log:
-        print(bold("seasonalites found"))
-        print("detrend", trend)
-        print('season\theight [stds]')
-        for i in range(lp):
-            print(positions[i], '\t', round(heights[i],2))
-        if lp == 0:
-            print("no peaks found: see ya!")
+    lp = len(positions); rp = range(lp)
+    print('season  height/std') if log else None
+    [print("{:<7} {:.2f}".format(positions[i], heights[i])) for i in rp] if log else None
     return list(positions)
 
 

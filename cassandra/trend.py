@@ -20,8 +20,8 @@ class trend_class(copy_class):
     def set_function(self, function = None):
         self.function = function
         
-    def set_data(self, data = []):
-        self.data = np.array(data)
+    def set_data(self, data = None):
+        self.data = None if data is None else np.array(data) 
 
     def update_label(self):
         self.label = None if self.order is None else "Trend" + enclose_circled(self.order)
@@ -42,7 +42,7 @@ class trend_class(copy_class):
         self.set_data(data)
 
     def predict(self, time):
-        return self.function(time)
+        return self.function(time) if self.function is not None else None
 
     def get_data(self):
         return self.data

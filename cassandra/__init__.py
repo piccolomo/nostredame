@@ -1,2 +1,1 @@
-from .file import read_data
-from .list import find_seasons
+from .globals import read_data

@@ -1,9 +1,17 @@
 from cassandra.backup import backup_class, copy_class
 from cassandra.values import values_class
-from cassandra.trend import trend_class
+from cassandra.trend import trend_class, np
 from cassandra.season import season_class
 from cassandra.prediction import prediction_class
-from cassandra.string import enclose_circled#, nl, enclose_squared, bold, nl
+from cassandra.string import enclose_circled, enclose_squared
+from cassandra.list import find_seasons
+from cassandra.file import join_paths, add_extension, write_text, output_folder
+import matplotlib.pyplot as plt
+
+import matplotlib
+matplotlib.use('GTK3Agg')
+# GTK3Agg, GTK3Cairo, GTK4Agg, GTK4Cairo, MacOSX, nbAgg, QtAgg, QtCairo, TkAgg, TkCairo, WebAgg, WX, WXAgg, WXCairo, Qt5Agg, Qt5Cairo
+
 
 # from cassandra.plot import plot_class
 # from cassandra.quality import quality_class, is_like_list
@@ -34,8 +42,7 @@ class data_class(copy_class, backup_class):
         #         self._quality = quality_class()
         #         self._update_quality()
         
-        #         self._update_label()
-        
+        self.update_label()
         backup_class.__init__(self)
         
 
@@ -46,6 +53,7 @@ class data_class(copy_class, backup_class):
     def set_unit(self, unit = ''):
         self.unit = unit
         return self
+
 
     def set_data(self, time, values):
         self.time = time.copy()
@@ -58,32 +66,44 @@ class data_class(copy_class, backup_class):
         self.length_train = self.length - self.length_test
 
 
+    def find_seasons(self, threshold = 1, detrend = 2, log = True):
+        return find_seasons(self.get_data(), threshold, detrend, log)
+        
+    
+
+
+
     def set_trend(self, order = None):
         self.trend.fit(self, order)
-#         self._update_quality(); self._update_label();
+        #         self._update_quality();
+        self.update_label();
         return self
 
     def zero_trend(self):
         self.trend.zero()
+        self.update_label()
         return self
 
 
     def set_season(self, *seasons, detrend = None):
         self.season.fit(self, seasons, detrend)
         #self.update_quality()
+        self.update_label();
         return self
 
     def zero_season(self):
         self.season.zero()
+        self.update_label()
         return self
 
 
     def set_predictor(self, name, dictionary):
-         self.prediction.set_predictor(name, dictionary)
-         residuals = data_class(self.time, values_class(self.get_residuals()))
-         self.prediction.fit(residuals)
-         #self._update_quality()
-         return self
+        self.prediction.set_predictor(name, dictionary)
+        residuals = data_class(self.time, values_class(self.get_residuals()))
+        self.prediction.fit(residuals)
+        #self._update_quality()
+        self.update_label()
+        return self
 
     def set_naive(self, level = 'mean'):
         self.set_predictor("naive", {'level': level})
@@ -95,6 +115,7 @@ class data_class(copy_class, backup_class):
      
     def zero_prediction(self):
         self.prediction.zero()
+        self.update_label()
         return self
 
     
@@ -117,6 +138,7 @@ class data_class(copy_class, backup_class):
         return season if season is not None else np.zeros(self.length)
 
     def get_prediction(self):
+        prediction = self.prediction.data
         return prediction if prediction is not None else np.zeros(self.length)
 
     def get_treason(self):
@@ -128,10 +150,31 @@ class data_class(copy_class, backup_class):
     def get_background(self):
         return self.get_treason() + self.get_prediction()
 
+    
+    def update_label(self):
+        labels = [self.trend.label, self.season.label, self.prediction.label]
+        self.label = ' + '.join([l for l in labels if l is not None])
+        
+    def get_ylabel(self):
+        name = self.name.title()
+        name = name if self.unit == '' else name + ' ' + enclose_squared(self.unit)
+        return name
+    
+
+    def plot(self, width = 15, font_size = 1, block = 0):
+        height = 9/ 16 * width; font_size = round(font_size * width / 1.1)
+        plt.clf(); plt.close(); plt.pause(0.01);
+        plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
+        plt.figure(figsize = (width, height)); plt.style.use(plt.style.available[-2])
+        plt.plot(self.time.datetime, self.get_data(), label = self.name.title())
+        plt.plot(self.time.datetime, self.get_background(), label = self.label)
+        plt.title(self.name.title()); plt.ylabel(self.get_ylabel())
+        plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = block)
+        return self
 
     
     def forecast(self, length = None):
-        length = self.forecast_length if length is None else length
+        length = self.length_forecast if length is None else length
         time = self.time.forecast(length)
         values = self.values.forecast(length)
         data = data_class(time, values)
@@ -142,9 +185,8 @@ class data_class(copy_class, backup_class):
         
     def extend(self, length = None):
         forecast = self.forecast(length)
-        length = self.forecast_length if length is None else length
         data = self.append(forecast)
-        data.name = self.get_name() + " extended" + enclose_circled(length)
+        data.name = self.name + " extended" + enclose_circled(length)
         data.unit = self.unit
         return data
 
@@ -159,10 +201,28 @@ class data_class(copy_class, backup_class):
         time = self.time.append(data.time)
         values = self.values.append(data.values)
         data = data_class(time, values)
-        self_project(data)
-        data.set_name(self.get_name() + " + " + data.get_name())
+        self.project(data)
+        data.set_name(self.name + " + " + data.name)
         data.unit = self.unit 
         return data
+
+
+    def save(self, log = True):
+        path = self.get_path()
+        path_back = add_extension(path, 'csv')
+        path_plot = add_extension(path, 'jpg')
+        background = np.transpose([self.time.data, self.get_background()])
+        background = '\n'.join([','.join(el) for el in background])
+        write_text(path_back, background)
+        print("background saved in", path_back) if log else None
+        self.plot(block = 0); plt.savefig(path_plot); plt.pause(0.01); plt.close();
+        print("plot saved in", path_plot) if log else None
+        return self
+
+    def get_path(self):
+        name = self.name.lower().replace(' ', '-')
+        return join_paths(output_folder, name)
+        
 
     
     def __mul__(self, constant):

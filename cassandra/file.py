@@ -1,7 +1,7 @@
 import os
 from cassandra.time import time_class
 from cassandra.values import values_class
-from cassandra.data import data_class
+
 
 # Path Manipulation
 def correct_path(folder):
@@ -17,7 +17,7 @@ def join_paths(*args):
 def base_name(path):
     return os.path.basename(correct_path(path))
 
-add_csv_extension = lambda path: path + ".csv" if "." not in base_name(path) else path
+add_extension = lambda path, extension: path + "." + extension if "." not in base_name(path) else path
 
 
 # Folders
@@ -35,7 +35,7 @@ os.makedirs(output_folder) if not os.path.exists(output_folder) else None
 
 # Read Files
 def read_table(path, delimiter = ",", header = False):
-    path = add_csv_extension(path)
+    path = add_extension(path, 'csv')
     text = read_text(path)
     text = text[header : ]
     data = [el.replace("\n", "").split(delimiter) for el in text]
@@ -47,11 +47,10 @@ def read_text(path):
         text = file.readlines()
     return text
 
-def read_data(path,  delimiter = ",", header = False, form = None, string_function = None):
-    data = read_table(path, delimiter, header)
-    values = [float(el[-1]) for el in data]
-    time = [el[0] for el in data]
-    time = time_class(time, form, string_function)
-    values = values_class(values)
-    return data_class(time, values)
+def write_text(path, text):
+    file = open(path, "w")
+    file.write(text)
+    file.close()
+
+
 
