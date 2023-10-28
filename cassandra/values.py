@@ -13,14 +13,14 @@ class values_class(copy_class):
 
     def update_metrics(self):
         self.length = self.l = len(self.data)
-        self.max = max(self.data) if self.length > 0 else None
-        self.min = min(self.data) if self.length > 0 else None
-        self.span = self.max - self.min if self.length > 0 else None
         self.first = self.data[0] if self.length > 0 else None
         self.last = self.data[-1] if self.length > 0 else None
         self.mean = np.mean(self.data) if self.length > 0 else None
-        self.rms = np.mean(np.array(self.data) ** 2) ** 0.5 if self.length > 0 else None
-        self.std = np.std(self.data) if self.length > 0 else None
+        # self.max = max(self.data) if self.length > 0 else None
+        # self.min = min(self.data) if self.length > 0 else None
+        # self.span = self.max - self.min if self.length > 0 else None
+        # self.rms = rms(self.data) if self.length > 0 else None
+        # self.std = np.std(self.data) if self.length > 0 else None
 
     def forecast(self, length):
         return values_class(np.zeros(length) * np.nan)
@@ -42,3 +42,5 @@ class values_class(copy_class):
        
     def __mul__(self, constant):
         return self.copy().set(self.data * constant)
+
+

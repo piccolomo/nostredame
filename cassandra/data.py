@@ -3,6 +3,7 @@ from cassandra.values import values_class
 from cassandra.trend import trend_class, np
 from cassandra.season import season_class
 from cassandra.prediction import prediction_class
+from cassandra.quality import quality_class
 from cassandra.string import enclose_circled, enclose_squared
 from cassandra.list import find_seasons
 from cassandra.file import join_paths, add_extension, write_text, output_folder
@@ -39,8 +40,7 @@ class data_class(copy_class, backup_class):
         self.season = season_class()
         self.prediction = prediction_class()
 
-        #         self._quality = quality_class()
-        #         self._update_quality()
+        self.quality = quality_class()
         
         self.update_label()
         backup_class.__init__(self)
@@ -75,25 +75,19 @@ class data_class(copy_class, backup_class):
 
     def set_trend(self, order = None):
         self.trend.fit(self, order)
-        #         self._update_quality();
-        self.update_label();
         return self
 
     def zero_trend(self):
         self.trend.zero()
-        self.update_label()
         return self
 
 
     def set_season(self, *seasons, detrend = None):
         self.season.fit(self, seasons, detrend)
-        #self.update_quality()
-        self.update_label();
         return self
 
     def zero_season(self):
         self.season.zero()
-        self.update_label()
         return self
 
 
@@ -101,8 +95,6 @@ class data_class(copy_class, backup_class):
         self.prediction.set_predictor(name, dictionary)
         residuals = data_class(self.time, values_class(self.get_residuals()))
         self.prediction.fit(residuals)
-        #self._update_quality()
-        self.update_label()
         return self
 
     def set_naive(self, level = 'mean'):
@@ -115,14 +107,36 @@ class data_class(copy_class, backup_class):
      
     def zero_prediction(self):
         self.prediction.zero()
-        self.update_label()
         return self
 
-    
     def zero_background(self):
         self.zero_trend()
         self.zero_season()
         self.zero_prediction()
+        return self
+
+
+    def set_quality_function(self, name):
+        self.quality.set_function(name)
+        return self
+
+    def update_quality(self):
+        self.quality.set(self.get_data(), self.get_background())
+        self.quality.update_label()
+        return self
+
+    def get_quality(self):
+        #self.update_quality()
+        return self.quality.quality
+
+
+    def log(self):
+        self.update_label()
+        print('----' + self.name.title() + '----')
+        print(self.trend.label)
+        print(self.season.label)
+        print(self.prediction.label)
+        print(self.quality.label)
         return self
 
 
@@ -152,6 +166,10 @@ class data_class(copy_class, backup_class):
 
     
     def update_label(self):
+        self.trend.update_label()
+        self.season.update_label()
+        self.prediction.update_label()
+        self.update_quality()
         labels = [self.trend.label, self.season.label, self.prediction.label]
         self.label = ' + '.join([l for l in labels if l is not None])
         
@@ -162,6 +180,7 @@ class data_class(copy_class, backup_class):
     
 
     def plot(self, width = 15, font_size = 1, block = 0):
+        self.update_label()
         height = 9/ 16 * width; font_size = round(font_size * width / 1.1)
         plt.clf(); plt.close(); plt.pause(0.01);
         plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
