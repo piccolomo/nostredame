@@ -36,16 +36,8 @@ class background_class():
         self.label = ' + '.join([l for l in labels if l is not None])
 
 
-    def find_trend(self, data):
-        pass
-
     def fit_trend(self, data, order):
-        self.trend.fit(data, order)
-
-        
-    def find_seasons(self, data, threshold = 1, log = True):
-        data = self.get_season_residuals(data).values.data
-        return find_seasons(data, threshold, log)
+        self.trend.fit(data, order) 
 
     def fit_season(self, data, periods):
         self.season.fit(self.get_season_residuals(data), periods)
@@ -116,6 +108,24 @@ class background_class():
         new.season = self.season.copy()
         new.prediction = self.prediction.copy()
         return new
+
+
+    def find_trend(self, data, log = True):
+        d = data.copy().zero_background()
+        T, t = d.split()
+        trends = range(0, 10)
+        qualities = []
+        for trend in trends:
+            T.fit_trend(trend)
+            t.background.trend = T.background.trend.project(t.time)
+            t.log() if log else None
+            qualities.append(t.get_quality())
+        pos = qualities.index(min(qualities))
+        return trends[pos]
+
+    def find_seasons(self, data, threshold = 1, log = True):
+        data = self.get_season_residuals(data).values.data
+        return find_seasons(data, threshold, log)
         
         
         

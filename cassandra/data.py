@@ -46,6 +46,9 @@ class data_class(backup_class):
         self.length_train = self.length - self.length_test
         
 
+    def find_trend(self, log = True):
+        return self.background.find_trend(self, log)
+        
     def fit_trend(self, order = None):
         self.background.fit_trend(self, order)
         return self
@@ -113,8 +116,9 @@ class data_class(backup_class):
 
     def log(self):
         self.update_label()
-        print(self.name.upper() + ': ' + self.background.label + ' - '+ self.quality.label)
-        return self
+        out = self.name.upper()
+        out = (out + ': ' + self.background.label + ': ' + self.quality.label) if self.background.label != '' else out
+        print(out)
 
 
     def plot(self, width = 15, font_size = 1, block = 0):

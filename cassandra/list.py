@@ -56,7 +56,7 @@ def find_seasons(data, threshold = 1, log = True):
     print('season  height/std') if log else None
     [print("{:<7} {:.2f}".format(periods[i], heights[i])) for i in rp] if log else None
     periods = np.transpose(sorted(np.transpose([periods, heights]), key = lambda el: -el[1]))[0]
-    return periods
+    return [int(el) for el in periods]
     
     
 # Find Best Utility
