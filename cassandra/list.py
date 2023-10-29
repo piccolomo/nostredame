@@ -22,7 +22,7 @@ def get_trend_data(data, order = 2):
     function = get_trend_function(x, data, order)
     return np.vectorize(function)(x)
     
-remove_trend = lambda data, order = 2: data if order is None else (data - get_trend_data(data, order))
+remove_trend = lambda data, order = 2: data - get_trend_data(data, order)
 
 
 # Season Utilities

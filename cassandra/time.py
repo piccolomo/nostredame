@@ -36,7 +36,9 @@ class time_class(copy_class):
         index = range(-1, length + 1)
         time = [self.datetime[-1] + self.freq * i for i in range(0, length + 1)][1:]
         time = [el.strftime(self.form) for el in time]
-        return time_class(time, self.form)
+        new = time_class(time, self.form)
+        new.index = range(self.length, self.length + length)
+        return new
 
     def append(self, time):
         return time_class(self.data + time.data, self.form)

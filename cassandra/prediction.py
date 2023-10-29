@@ -1,24 +1,20 @@
 from statsmodels.tools.sm_exceptions import ConvergenceWarning, SpecificationWarning, ValueWarning
 from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
 from cassandra.string import dictionary_to_string
-from cassandra.backup import copy_class
+from cassandra.trend import trend_class, np
 import warnings
 warnings.simplefilter('ignore', ConvergenceWarning)
 
-import numpy as np
-
-class prediction_class(copy_class):
+class prediction_class(trend_class):
     def __init__(self):
         self.zero()
         
     def zero(self):
         self.predictor = None
-        self.set_function()
-        self.set_data()
-        self.update_label()
+        super().zero()
         
     def set_function(self, function = None):
-        self.predictor.set_function(function) if self.predictor is not None else None
+        self.function = self.predictor.function if self.predictor is not None else None
 
     def set_data(self, data = None):
         self.data = None if data is None else np.array(data)
@@ -30,6 +26,14 @@ class prediction_class(copy_class):
     def set_predictor(self, name, dictionary):
         self.predictor = naive_predictor(dictionary) if name == "naive" else es_predictor(dictionary) if name == "es" else None
         print("Incorrect Model") if name not in ['es', 'naive'] else None
+
+    def set_naive(self, level = 'mean'):
+        self.set_predictor("naive", {'level': level})
+        return self
+     
+    def set_es(self, period):
+        self.set_predictor("es", {"seasonal_periods": period, "seasonal": "add"})
+        return self
 
     def fit(self, data):
         self.predictor.fit(data) if self.predictor is not None else None
@@ -47,20 +51,14 @@ class prediction_class(copy_class):
         self.predictor.update_label() if self.predictor is not None else None
         self.label = self.predictor.label if self.predictor is not None else None
     
-    def project(self, time):
-        new = self.copy()
-        new.update_data(time)
-        return new
-
-    def __mul__(self, constant):
-        new = self.copy()
-        data = None if self.data is None else self.data * constant
-        new.set_data(data)
-        new.predictor = None if self.predictor is None else self.predictor * constant
+    def empty(self):
+        new = prediction_class()
+        new.predictor = self.predictor
+        new.update_label()
         return new
 
         
-class predictor_class(copy_class):
+class predictor_class():
     def __init__(self, name, dictionary):
         self.set_name(name)
         self.set_dictionary(dictionary)
@@ -83,12 +81,8 @@ class predictor_class(copy_class):
     def update_label(self):
         status = "Failed " if self.status == -1 else "Not-Fitted-" if self.status == 0 else ''
         self.label = status + self.name.title() + dictionary_to_string(self.dictionary)
-        
-    def __mul__(self, constant):
-        new = self.copy()
-        new.set_function(lambda el: self.function(el) * constant)
-        return new
 
+        
     
 class naive_predictor(predictor_class):
     def __init__(self, dictionary):
@@ -114,8 +108,9 @@ class es_predictor(predictor_class):
             function = lambda time: fit.predict(time.index[0], time.index[-1])
             self.set_function(function)
             self.set_status(1)
-        except (TypeError, ValueWarning, ConvergenceWarning, ValueError):
+        except (RuntimeWarning, TypeError, ValueWarning, ConvergenceWarning, ValueError):
             print("Carefull!")
+            print(data.values.data)
             self.set_status(-1)
 
 

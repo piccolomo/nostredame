@@ -1,8 +1,6 @@
 from cassandra.backup import backup_class, copy_class
 from cassandra.values import values_class
-from cassandra.trend import trend_class, np
-from cassandra.season import season_class
-from cassandra.prediction import prediction_class
+from cassandra.background import background_class, np
 from cassandra.quality import quality_class
 from cassandra.string import enclose_circled, enclose_squared
 from cassandra.list import find_seasons
@@ -11,37 +9,17 @@ import matplotlib.pyplot as plt
 
 import matplotlib
 matplotlib.use('GTK3Agg')
-# GTK3Agg, GTK3Cairo, GTK4Agg, GTK4Cairo, MacOSX, nbAgg, QtAgg, QtCairo, TkAgg, TkCairo, WebAgg, WX, WXAgg, WXCairo, Qt5Agg, Qt5Cairo
 
-
-# from cassandra.plot import plot_class
-# from cassandra.quality import quality_class, is_like_list
-# from cassandra.values import values_class
-# from cassandra.study import study_class
-# from cassandra.best import find_best_class
-# from cassandra.time import time_class
-
-# from cassandra.path import read_table, correct_path, join_paths, output_folder
-# from cassandra.dictionary import dictionary
-# from .platform import platform, set_screen_default_size
-
-# import pandas as pd
 # import numpy as np
 
-class data_class(copy_class, backup_class):
+class data_class(backup_class):
     def __init__(self, time, values):
         self.set_name()
         self.set_unit()
-        
         self.set_data(time, values)
         self.update_length()
-        
-        self.trend = trend_class()
-        self.season = season_class()
-        self.prediction = prediction_class()
-
+        self.background = background_class()
         self.quality = quality_class()
-        
         self.update_label()
         backup_class.__init__(self)
         
@@ -59,70 +37,62 @@ class data_class(copy_class, backup_class):
         self.time = time.copy()
         self.values = values.copy()
 
+    def get_data(self):
+        return self.values.data
+
     def update_length(self):
         self.length = self.values.length
         self.length_forecast = round(0.2 * self.length)
         self.length_test = round(self.length_forecast / (self.length + self.length_forecast) * self.length)
         self.length_train = self.length - self.length_test
+        
 
-
+    def fit_trend(self, order = None):
+        self.background.fit_trend(self, order)
+        return self
+    
     def find_seasons(self, threshold = 1, detrend = 2, log = True):
         return find_seasons(self.get_data(), threshold, detrend, log)
-        
     
-
-
-
-    def set_trend(self, order = None):
-        self.trend.fit(self, order)
+    def fit_season(self, *periods):
+        self.background.fit_season(self, periods)
         return self
 
-    def zero_trend(self):
-        self.trend.zero()
-        return self
-
-
-    def set_season(self, *seasons, detrend = None):
-        self.season.fit(self, seasons, detrend)
-        return self
-
-    def zero_season(self):
-        self.season.zero()
-        return self
-
-
-    def set_predictor(self, name, dictionary):
-        self.prediction.set_predictor(name, dictionary)
-        residuals = data_class(self.time, values_class(self.get_residuals()))
-        self.prediction.fit(residuals)
-        return self
-
-    def set_naive(self, level = 'mean'):
-        self.set_predictor("naive", {'level': level})
+    def fit_naive(self, level = 'mean'):
+        self.background.prediction.set_naive(level)
+        self.background.fit_predictor(self)
         return self
      
-    def set_es(self, period):
-        self.set_predictor("es", {"seasonal_periods": period, "seasonal": "add"})
+    def fit_es(self, period):
+        self.background.prediction.set_es(period)
+        self.background.fit_predictor(self)
         return self
-     
-    def zero_prediction(self):
-        self.prediction.zero()
+
+    
+    def retrain_background(self):
+        self.background.retrain(self)
         return self
 
     def zero_background(self):
-        self.zero_trend()
-        self.zero_season()
-        self.zero_prediction()
+        self.background.zero()
         return self
 
+    def get_background(self):
+        return self.background.get_total()
 
-    def set_quality_function(self, name):
-        self.quality.set_function(name)
-        return self
 
+    def update_label(self):
+        self.background.update_label()
+        self.update_quality()
+        
+    
     def update_quality(self):
         self.quality.set(self.get_data(), self.get_background())
         self.quality.update_label()
+        return self
+    
+    def set_quality_function(self, name):
+        self.quality.set_function(name)
         return self
 
     def get_quality(self):
@@ -140,45 +110,6 @@ class data_class(copy_class, backup_class):
         return self
 
 
-    def get_data(self):
-        return self.values.data
-    
-    def get_trend(self):
-        trend = self.trend.data
-        return trend if trend is not None else np.zeros(self.length)
-
-    def get_season(self):
-        season = self.season.data
-        return season if season is not None else np.zeros(self.length)
-
-    def get_prediction(self):
-        prediction = self.prediction.data
-        return prediction if prediction is not None else np.zeros(self.length)
-
-    def get_treason(self):
-        return self.get_trend() + self.get_season()
-
-    def get_residuals(self):
-        return self.get_data() - self.get_treason()
-
-    def get_background(self):
-        return self.get_treason() + self.get_prediction()
-
-    
-    def update_label(self):
-        self.trend.update_label()
-        self.season.update_label()
-        self.prediction.update_label()
-        self.update_quality()
-        labels = [self.trend.label, self.season.label, self.prediction.label]
-        self.label = ' + '.join([l for l in labels if l is not None])
-        
-    def get_ylabel(self):
-        name = self.name.title()
-        name = name if self.unit == '' else name + ' ' + enclose_squared(self.unit)
-        return name
-    
-
     def plot(self, width = 15, font_size = 1, block = 0):
         self.update_label()
         height = 9/ 16 * width; font_size = round(font_size * width / 1.1)
@@ -186,45 +117,11 @@ class data_class(copy_class, backup_class):
         plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
         plt.figure(figsize = (width, height)); plt.style.use(plt.style.available[-2])
         plt.plot(self.time.datetime, self.get_data(), label = self.name.title())
-        plt.plot(self.time.datetime, self.get_background(), label = self.label)
+        back = self.get_background()
+        plt.plot(self.time.datetime, back, label = self.background.label) if back is not None else None
         plt.title(self.name.title()); plt.ylabel(self.get_ylabel())
         plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = block)
         return self
-
-    
-    def forecast(self, length = None):
-        length = self.length_forecast if length is None else length
-        time = self.time.forecast(length)
-        values = self.values.forecast(length)
-        data = data_class(time, values)
-        self.project(data)
-        data.name = self.name + " forecasted" + enclose_circled(length)
-        data.unit = self.unit
-        return data    
-        
-    def extend(self, length = None):
-        forecast = self.forecast(length)
-        data = self.append(forecast)
-        data.name = self.name + " extended" + enclose_circled(length)
-        data.unit = self.unit
-        return data
-
-    def project(self, data, retrain = False):
-        data.trend = self.trend.project(data.time)
-        data.season = self.season.project(data.time)
-        data.prediction = self.prediction.project(data.time)
-        data.update_label()
-        # data.update_quality()
-
-    def append(self, data):
-        time = self.time.append(data.time)
-        values = self.values.append(data.values)
-        data = data_class(time, values)
-        self.project(data)
-        data.set_name(self.name + " + " + data.name)
-        data.unit = self.unit 
-        return data
-
 
     def save(self, log = True):
         path = self.get_path()
@@ -237,23 +134,99 @@ class data_class(copy_class, backup_class):
         self.plot(block = 0); plt.savefig(path_plot); plt.pause(0.01); plt.close();
         print("plot saved in", path_plot) if log else None
         return self
+    
+    
+    def forecast(self):
+        time = self.time.forecast(self.length_forecast)
+        data = self.project(time)
+        data.background = self.project_background(time)
+        data.name = self.name + " forecasted" + enclose_circled(self.length_forecast)
+        data.unit = self.unit
+        return data
+
+    def extend(self):
+        time = self.time.extend(self.length_forecast)
+        data = self.project(time)
+        data.background = self.project_background(time)
+        data.name = self.name + " extended" + enclose_circled(self.length_forecast)
+        data.unit = self.unit
+        return data
+    
+    def split(self, test_length = None, retrain = False):
+        train = self.part(0, self.length_train);
+        #train.background = self.project_background(train.time)
+        train.retrain_background() if retrain else None
+
+        test_time = self.time.part(self.length_train, self.length)
+        test = self.project(test_time)
+        test.background = train.project_background(test.time)
+
+        train.name = self.name + " train"; train.set_unit(self.unit)
+        test.name = self.name + " test"; test.set_unit(self.unit)
+        return train, test
+
+    def part(self, begin, end):
+        time = self.time.part(begin, end)
+        data = self.project(time)
+        data.background = self.background.part(begin, end)
+        data.name = self.name + '[{0}:{1}]'.format(begin, end)
+        data.unit = self.unit
+        return data
+
+    def project(self, time):
+        values = [self.values.data[i] if i in self.time.index else np.nan for i in time.index]
+        return data_class(time, values_class(values))
+
+    def project_background(self, time):
+        return self.background.project(time)
+
+    def append(self, data):
+        time = self.time.append(data.time)
+        values = self.values.append(data.values)
+        new = data_class(time, values)
+        new.background = self.background.append(data.background)
+        new.set_name(self.name + " + " + data.name)
+        new.unit = self.unit 
+        return new
+
+    def copy(self):
+        new = data_class(self.time.copy(), self.values.copy())
+        new.name = self.name
+        new.unit = self.unit
+        new.background = self.background.copy()
+        new.quality = self.quality.copy()
+        new.update_label()
+        return new
+
+  
+    def __add__(self, constant):
+        new = self.copy()
+        new.values += constant
+        #new.background += constant
+        return new
+    
+    def __sub__(self, constant):
+        return self + (-constant)
+
+    def __mul__(self, constant):
+        new = self.copy()
+        new.values *= constant
+        #new.background *= constant
+        return new
+
+    def __truediv__(self, constant):
+        return self * (1 / constant)
+
+
+    def get_ylabel(self):
+        name = self.name.title()
+        name = name if self.unit == '' else name + ' ' + enclose_squared(self.unit)
+        return name
 
     def get_path(self):
         name = self.name.lower().replace(' ', '-')
         return join_paths(output_folder, name)
         
-
-    
-    def __mul__(self, constant):
-        data = self.copy()
-        data.trend = self.trend * constant
-        data.season = self_season * constant
-        data.prediction = self.prediction * constant
-        data.set(self.time, self.values * constant)
-        return data
-
-    def __truediv__(self, constant):
-        return self * (1 / constant)
 
 
 
@@ -471,24 +444,9 @@ class data_class(copy_class, backup_class):
 #         return self
         
 
-#     def part(self, begin, end, retrain = False):
-#         time = self._time.part(begin, end)
-#         values = self._values.part(begin, end)
-#         data = data_class(time, values)
-#         self._project_background_to(data, retrain)
-#         return data
 
-#     def split(self, test_length = None, retrain = False):
-#         test_length = self.test_length if test_length is None else test_length
-#         test_length = ratio_to_length(test_length, self.length)
-#         train_length = self.length - test_length
-#         train, test = self.part(0, train_length, retrain), self.part(train_length, self.length)
-#         train._project_background_to(test, retrain = False) if retrain else None
-#         train.set_name(self.get_name() + " train")
-#         test.set_name(self.get_name() + " test")
-#         train.set_unit(self.unit)
-#         test.set_unit(self.unit)
-#         return train, test
+
+
 
 
     

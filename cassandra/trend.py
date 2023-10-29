@@ -46,20 +46,54 @@ class trend_class(copy_class):
 
     def get_data(self):
         return self.data
+    
 
     def project(self, time):
-        new = self.copy()
+        new = self.empty()
         new.update_data(time)
         return new
 
-    def __mul__(self, constant):
-        new = self.copy()
-        data = None if self.data is None else self.data * constant
-        function = function if self.function is None else (lambda el: self.function(el) * constant)
-        new.set_data(data)
-        new.set_function(function)
+    def part(self, begin, end):
+        new = self.empty()
+        new.data = self.data[begin: end]
         return new
 
+    def append(self, trend):
+        new = self.empty()
+        new.data = np.concatenate((self.data, trend.data)) if self.data is not None and trend.data is not None else None
+        return new
+
+    def empty(self):
+        new = trend_class()
+        new.order = self.order
+        new.function = self.function
+        new.update_label()
+        return new
+
+    # def __add__(self, constant):
+    #     new = self.copy()
+    #     new.function_add(constant)
+    #     new.data_add(constant)
+    #     return new
+    
+    # def __mul__(self, constant):
+    #     new = self.copy()
+    #     new.function_mul(constant)
+    #     new.data_mul(constant)
+    #     return new
+
+    # def data_add(self, constant):
+    #     self.data = None if self.data is None else self.data + constant
+        
+    # def data_mul(self, constant):
+    #     self.data = None if self.data is None else self.data * constant
+
+    # def function_add(self, constant):
+    #     self.function = None if self.function is None else (lambda el: self.function(el) + constant)
+        
+    # def function_mul(self, constant):
+    #     self.function = None if self.function is None else (lambda el: self.function(el) * constant)
+        
 
 
 
