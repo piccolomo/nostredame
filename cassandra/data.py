@@ -102,10 +102,8 @@ class data_class(backup_class):
 
     def log(self):
         self.update_label()
-        print('----' + self.name.title() + '----')
-        print(self.trend.label)
-        print(self.season.label)
-        print(self.prediction.label)
+        print(self.name.upper())
+        print(self.background.label)
         print(self.quality.label)
         return self
 
@@ -154,7 +152,6 @@ class data_class(backup_class):
     
     def split(self, test_length = None, retrain = False):
         train = self.part(0, self.length_train);
-        #train.background = self.project_background(train.time)
         train.retrain_background() if retrain else None
 
         test_time = self.time.part(self.length_train, self.length)
@@ -202,7 +199,6 @@ class data_class(backup_class):
     def __add__(self, constant):
         new = self.copy()
         new.values += constant
-        #new.background += constant
         return new
     
     def __sub__(self, constant):
@@ -211,7 +207,6 @@ class data_class(backup_class):
     def __mul__(self, constant):
         new = self.copy()
         new.values *= constant
-        #new.background *= constant
         return new
 
     def __truediv__(self, constant):

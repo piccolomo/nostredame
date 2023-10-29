@@ -70,30 +70,3 @@ class trend_class(copy_class):
         new.update_label()
         return new
 
-    # def __add__(self, constant):
-    #     new = self.copy()
-    #     new.function_add(constant)
-    #     new.data_add(constant)
-    #     return new
-    
-    # def __mul__(self, constant):
-    #     new = self.copy()
-    #     new.function_mul(constant)
-    #     new.data_mul(constant)
-    #     return new
-
-    # def data_add(self, constant):
-    #     self.data = None if self.data is None else self.data + constant
-        
-    # def data_mul(self, constant):
-    #     self.data = None if self.data is None else self.data * constant
-
-    # def function_add(self, constant):
-    #     self.function = None if self.function is None else (lambda el: self.function(el) + constant)
-        
-    # def function_mul(self, constant):
-    #     self.function = None if self.function is None else (lambda el: self.function(el) * constant)
-        
-
-
-

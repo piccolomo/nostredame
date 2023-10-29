@@ -107,19 +107,6 @@ class background_class():
         new.season = self.season.copy()
         new.prediction = self.prediction.copy()
         return new
-
-    # def __add__(self, constant):
-    #     new = self.copy()
-    #     back = [el.data for el in [new.trend, new.season, new.prediction] if el.data is not None][0]
-    #     back += constant
-    #     return new
-    
-    # def __mul__(self, constant):
-    #     new = self.copy()
-    #     new.trend *= constant 
-    #     new.season *= constant 
-    #     new.prediction *= constant 
-    #     return new
         
         
         
