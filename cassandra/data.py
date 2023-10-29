@@ -3,7 +3,6 @@ from cassandra.values import values_class
 from cassandra.background import background_class, np
 from cassandra.quality import quality_class
 from cassandra.string import enclose_circled, enclose_squared
-from cassandra.list import find_seasons
 from cassandra.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
@@ -51,8 +50,8 @@ class data_class(backup_class):
         self.background.fit_trend(self, order)
         return self
     
-    def find_seasons(self, threshold = 1, detrend = 2, log = True):
-        return find_seasons(self.get_data(), threshold, detrend, log)
+    def find_seasons(self, threshold = 1, log = True):
+        return self.background.find_seasons(self, threshold, log)
     
     def fit_season(self, *periods):
         self.background.fit_season(self, periods)
@@ -80,6 +79,18 @@ class data_class(backup_class):
     def get_background(self):
         return self.background.get_total()
 
+    def get_trend(self):
+        return self.background.get_trend()
+    
+    def get_season(self):
+        return self.background.get_season()
+    
+    def get_treason(self):
+        return self.background.get_treason()
+    
+    def get_prediction(self):
+        return self.background.get_prediction()
+
 
     def update_label(self):
         self.background.update_label()
@@ -102,9 +113,7 @@ class data_class(backup_class):
 
     def log(self):
         self.update_label()
-        print(self.name.upper())
-        print(self.background.label)
-        print(self.quality.label)
+        print(self.name.upper() + ': ' + self.background.label + ' - '+ self.quality.label)
         return self
 
 
@@ -172,7 +181,10 @@ class data_class(backup_class):
 
     def project(self, time):
         values = [self.values.data[i] if i in self.time.index else np.nan for i in time.index]
-        return data_class(time, values_class(values))
+        new = data_class(time, values_class(values))
+        new.quality = self.quality.copy()
+        return new
+
 
     def project_background(self, time):
         return self.background.project(time)

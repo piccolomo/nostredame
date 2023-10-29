@@ -1,6 +1,7 @@
 from cassandra.trend import trend_class, np
 from cassandra.season import season_class
 from cassandra.prediction import prediction_class
+from cassandra.list import find_seasons
 
 
 class background_class():
@@ -35,8 +36,16 @@ class background_class():
         self.label = ' + '.join([l for l in labels if l is not None])
 
 
+    def find_trend(self, data):
+        pass
+
     def fit_trend(self, data, order):
         self.trend.fit(data, order)
+
+        
+    def find_seasons(self, data, threshold = 1, log = True):
+        data = self.get_season_residuals(data).values.data
+        return find_seasons(data, threshold, log)
 
     def fit_season(self, data, periods):
         self.season.fit(self.get_season_residuals(data), periods)

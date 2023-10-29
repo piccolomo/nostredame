@@ -55,7 +55,7 @@ class trend_class(copy_class):
 
     def part(self, begin, end):
         new = self.empty()
-        new.data = self.data[begin: end]
+        new.data = None if self.data is None else self.data[begin: end]
         return new
 
     def append(self, trend):

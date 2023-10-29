@@ -41,21 +41,22 @@ get_acf = lambda data: acf(data, nlags = len(data))
 
 from cassandra.string import bold
 
-def find_seasons(data, threshold = 1, trend = 2, log = True):
+def find_seasons(data, threshold = 1, log = True):
     l = len(data)
     lower, upper = 2, l // 2
-    data = remove_trend(data, trend)
+    #data = remove_trend(data, trend)
     data = get_acf(data)
     data = [data[i] for i in range(lower, upper + 1)]
     mean, std = np.mean(data), np.std(data)
     data = [(el - mean)/ std for el in data]
-    positions, properties = find_peaks(data, height = threshold, width = 0, rel_height = 0.5)
-    positions += lower
+    periods, properties = find_peaks(data, height = threshold, width = 0, rel_height = 0.5)
+    periods += lower
     heights = properties["peak_heights"]
-    lp = len(positions); rp = range(lp)
+    lp = len(periods); rp = range(lp)
     print('season  height/std') if log else None
-    [print("{:<7} {:.2f}".format(positions[i], heights[i])) for i in rp] if log else None
-    return list(positions)
+    [print("{:<7} {:.2f}".format(periods[i], heights[i])) for i in rp] if log else None
+    periods = np.transpose(sorted(np.transpose([periods, heights]), key = lambda el: -el[1]))[0]
+    return periods
     
     
 # Find Best Utility
