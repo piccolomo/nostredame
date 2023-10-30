@@ -10,21 +10,21 @@ class quality_class(copy_class):
         self.set()
         self.update_label()
 
-    def set_function(self, name = 'rms'):
+    def set_function(self, name = 'r2'):
         self.function_name = name if name in function_names else 'rms'
         self.function = functions[function_names.index(name)]
 
     def update_label(self):
-        self.label = self.function_name.upper() + ' ' + '{:.2f}'.format(self.quality)
+        self.label = None if self.quality is None else self.function_name.upper() + ' = ' + '{:.2f}'.format(self.quality)
 
     def set(self, true = None, pred = None):
         data_ok = true is not None and pred is not None
-        self.quality = self.function(true, pred) if data_ok else np.nan
+        self.quality = self.function(true, pred) if data_ok else None
 
 # Utilities
 
 rms_quality = lambda true, pred: rms(true - pred)
-mape = lambda true, pred: np.mean(np.abs(true - pred) / true)
+mape = lambda true, pred: 100 * np.mean(np.abs(true - pred) / true)
 r2 = lambda true, pred: (1 - (rms(true - pred) / np.std(true)) ** 2)
 
 rms = lambda data: np.mean(np.array(data) ** 2) ** 0.5

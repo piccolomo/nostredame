@@ -34,10 +34,7 @@ class values_class(copy_class):
 
     def white(self):
         return self.set(np.random.normal(self.mean, self.std, self.length))
-       
-    def __mul__(self, constant):
-        return values_class(self.data * constant)
 
-    def __add__(self, constant):
-        return values_class(self.data + constant)
+    def add(self, data):
+        self.set(self.data + data)
 

@@ -33,7 +33,8 @@ class background_class():
         self.season.update_label()
         self.prediction.update_label()
         labels = [self.trend.label, self.season.label, self.prediction.label]
-        self.label = ' + '.join([l for l in labels if l is not None])
+        labels = [l for l in labels if l is not None]
+        self.label = None if len(labels) == 0 else '| ' + ' + '.join(labels)
 
 
     def fit_trend(self, data, order):
@@ -76,11 +77,11 @@ class background_class():
 
     def get_season_residuals(self, data):
         trend = self.get_trend()
-        return data - trend if trend is not None else data
+        return data.sub(trend) if trend is not None else data
     
     def get_prediction_residuals(self, data):
         treason = self.get_treason()
-        return data - treason if treason is not None else data
+        return data.sub(treason) if treason is not None else data
 
     def get_total(self):
         res = [data for data in [self.get_treason(), self.get_prediction()] if data is not None]
@@ -119,6 +120,7 @@ class background_class():
     def find_trend(self, data, log = True):
         d = data.copy()#.zero_background()
         T, t = d.split()
+        t.set_quality_function('rms')
         trends = range(0, 10)
         qualities = []
         for trend in trends:
@@ -130,14 +132,15 @@ class background_class():
         pos = qualities.index(min(qualities))
         return trends[pos]
 
-    def find_seasons(self, data, threshold = 1, log = True):
-        data = self.get_season_residuals(data).values.data
-        return find_seasons(data, threshold, log)
+    def find_seasons(self, data, threshold = 1, detrend = 3, log = True):
+        data = data.get_data()
+        return find_seasons(data, threshold, detrend, log)
 
     def find_es(self, data, log = True):
         d = data.copy()#.zero_background()
         T, t = d.split()
-        periods = self.find_seasons(data, 0, 0)
+        t.set_quality_function('rms')
+        periods = self.find_seasons(data, 0, 4, 0)
         qualities = []
         for period in periods:
             T.fit_es(period)
@@ -145,25 +148,27 @@ class background_class():
             t.update_quality()
             t.log() if log else None
             qualities.append(t.get_quality())
-        pos = qualities.index(min(qualities))
+        m = min([el for el in qualities if el is not None])
+        pos = qualities.index(m)
         return periods[pos]
 
     def find_all(self, data, log = True):
         data = data.copy().zero_background();
+        
         t = data.find_trend(log = False)
-        data.fit_trend(t).log() if log else None
+        data.log() if log else None
         
         s = data.zero_background().find_seasons(log = False)[:3]
-        data.fit_seasons(*s).log() if log else None
+        data.log() if log else None
         
-        s = data.zero_background().fit_trend(t).find_seasons(log = False)[:3]
-        data.fit_seasons(*s).log() if log else None
+        s = data.zero_background().fit_trend(t).find_seasons(log = False)
+        data.log() if log else None
         
         es = data.find_es(log = False)
-        data.fit_es(es).log() if log else None
+        data.log() if log else None
 
         es = data.zero_background().find_es(log = False)
-        data.fit_es(es).log() if log else None
+        data.log() if log else None
         
         
         

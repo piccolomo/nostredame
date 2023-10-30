@@ -46,17 +46,32 @@ class data_class(backup_class):
         self.length_train = self.length - self.length_test
 
 
-    def find_trend(self, log = True):
-        return self.background.find_trend(self, log)
-    
-    def find_seasons(self, threshold = 1, log = True):
-        return self.background.find_seasons(self, threshold, log)
+    def find_trend(self, log = False, set = True):
+        trend = self.background.find_trend(self, log)
+        self.fit_trend(trend) if set else None
+        return trend
 
-    def find_es(self, log = True):
-        return self.background.find_es(self, log)
+    def find_seasons(self, threshold = 1, detrend = 3, log = False, set = True):
+        periods = self.background.find_seasons(self, threshold, detrend, log)
+        self.fit_seasons(*periods[:3]) if set else None
+        return periods
+
+    def find_es(self, log = False, set = True):
+        es = self.background.find_es(self, log)
+        self.fit_es(es) if set else None
+        return es
 
     def find_all(self, log = True):
         return self.background.find_all(self, log)
+
+    def auto(self, log = True):
+        self.find_trend()
+        self.find_seasons()
+        self.find_es()
+        self.log() if log else None
+        self.save(log = log)
+        self.extend().plot() if log else None
+        
 
         
     def fit_trend(self, order = None):
@@ -106,7 +121,10 @@ class data_class(backup_class):
 
     def update_label(self):
         self.background.update_label()
-        
+        self.update_quality()
+        label = self.name.upper()
+        label = (label + ' | ' + self.quality.label) if self.quality.label is not None else label
+        self.label = (label + ' ' + self.background.label) if self.background.label is not None else label
     
     def update_quality(self):
         self.quality.set(self.get_data(), self.get_background())
@@ -124,9 +142,13 @@ class data_class(backup_class):
 
     def log(self):
         self.update_label()
-        out = self.name.upper()
-        out = (out + '  ' +  self.quality.label + '  ' + self.background.label) if self.background.label != '' else out
-        print(out)
+        print(self.label)
+
+    def log_split(self):
+        train, test = self.split(retrain = True)
+        test.set_quality_function('mape')
+        #train.log()
+        test.log()
 
 
     def plot(self, width = 15, font_size = 1, block = 0):
@@ -219,23 +241,6 @@ class data_class(backup_class):
         new.update_label()
         return new
 
-  
-    def __add__(self, constant):
-        new = self.copy()
-        new.values += constant
-        return new
-    
-    def __sub__(self, constant):
-        return self + (-constant)
-
-    def __mul__(self, constant):
-        new = self.copy()
-        new.values *= constant
-        return new
-
-    def __truediv__(self, constant):
-        return self * (1 / constant)
-
 
     def get_ylabel(self):
         name = self.name.title()
@@ -245,7 +250,24 @@ class data_class(backup_class):
     def get_path(self):
         name = self.name.lower().replace(' ', '-')
         return join_paths(output_folder, name)
-        
+
+
+    # def __add__(self, data):
+    #     new = data.copy()
+    #     new.values += data.values
+    #     return new
+
+    # def __sub__(self, data):
+    #     new = data.copy()
+    #     return new
+
+    def add(self, array):
+        new = self.copy()
+        new.values.add(array)
+        return new
+
+    def sub(self, array):
+        return self.add(-array)
 
 
 

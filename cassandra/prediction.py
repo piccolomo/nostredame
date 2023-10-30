@@ -77,9 +77,7 @@ class predictor_class():
         self.status = status # -1 = Failed, 0 = Non Fitted, 1 = Fitted
 
 
-
         
-    
 class naive_predictor(predictor_class):
     def __init__(self, dictionary):
         predictor_class.__init__(self, "naive", dictionary)
