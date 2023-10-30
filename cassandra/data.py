@@ -7,7 +7,7 @@ from cassandra.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
 import matplotlib
-matplotlib.use('GTK3Agg')
+#matplotlib.use('GTK3Agg')
 
 
 class data_class(backup_class):
