@@ -40,7 +40,10 @@ class data_class(backup_class):
 
     def update_length(self):
         self.length = self.values.length
-        self.length_forecast = round(0.2 * self.length)
+        self.set_forecast_length(round(0.2 * self.length))
+
+    def set_forecast_length(self, length):
+        self.length_forecast = length
         self.length_test = round(self.length_forecast / (self.length + self.length_forecast) * self.length)
         self.length_train = self.length - self.length_test
 
