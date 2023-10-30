@@ -6,8 +6,8 @@ from cassandra.string import enclose_circled, enclose_squared
 from cassandra.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
-import matplotlib
-matplotlib.use('GTK3Agg')
+#import matplotlib
+#matplotlib.use('GTK3Agg')
 
 
 class data_class(backup_class):
