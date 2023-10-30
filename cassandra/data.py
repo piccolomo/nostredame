@@ -135,7 +135,7 @@ class data_class(backup_class):
         return self
     
 
-    def log(self):
+    def log_data(self):
         self.update_label()
         print(self.label)
         return self
@@ -143,7 +143,13 @@ class data_class(backup_class):
     def log_split(self):
         train, test = self.split(retrain = True)
         #train.log()
-        test.log()
+        test.log_data()
+        return self
+
+    def log(self):
+        self.log_data()
+        self.log_split()
+        print()
         return self
 
 

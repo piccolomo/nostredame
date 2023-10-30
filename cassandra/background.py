@@ -126,7 +126,7 @@ class background_class():
             T.fit_trend(trend)
             t.background.trend = T.background.trend.project(t.time)
             t.update_quality()
-            t.log() if log else None
+            t.log_data() if log else None
             qualities.append(t.quality.rms)
         pos = qualities.index(min(qualities))
         return trends[pos]
@@ -144,7 +144,7 @@ class background_class():
             T.fit_es(period)
             t.background.prediction = T.background.prediction.project(t.time)
             t.update_quality()
-            t.log() if log else None
+            t.log_data() if log else None
             qualities.append(t.quality.rms)
         m = min([el for el in qualities if el is not None])
         pos = qualities.index(m)
@@ -154,22 +154,22 @@ class background_class():
         data = data.copy().zero_background();
         
         t = data.find_trend(log = False)
-        data.log().log_split() if log else None
+        data.log() if log else None
         
         s = data.zero_background().find_seasons(log = False)[:3]
-        print(); data.log().log_split() if log else None
+        data.log() if log else None
         
         s = data.zero_background().fit_trend(t).find_seasons(log = False)
-        print(); data.log().log_split() if log else None
+        data.log() if log else None
 
         es = data.find_es(log = False)
-        print(); data.log().log_split() if log else None
+        data.log() if log else None
         
         s = data.zero_background().fit_trend(t).find_es(log = False)
-        print(); data.log().log_split() if log else None
+        data.log() if log else None
 
         es = data.zero_background().find_es(log = False)
-        print(); data.log().log_split() if log else None
+        data.log() if log else None
         
         
         
