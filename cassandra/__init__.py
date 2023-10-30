@@ -1,1 +1,1 @@
-from .globals import read_data
+from .globals import read_data, read_text

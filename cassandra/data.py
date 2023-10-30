@@ -74,7 +74,7 @@ class data_class(backup_class):
         self.log() if log else None
         self.log_split() if log else None
         self.save(log = log)
-        self.extend().plot() if log else None
+        #self.extend().plot() if log else None
         
 
         
@@ -172,7 +172,9 @@ class data_class(backup_class):
         path_back = add_extension(path, 'csv')
         path_plot = add_extension(path, 'jpg')
         extended = self.extend()
-        background = np.transpose([extended.time.data, extended.get_data(), extended.get_background()])
+        background = extended.get_background()
+        background = np.zeros(extended.length) * np.nan if background is None else background
+        background = np.transpose([extended.time.data, extended.get_data(), background])
         background = '\n'.join([','.join(el) for el in background])
         write_text(path_back, background)
         print("background saved in", path_back) if log else None
