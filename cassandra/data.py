@@ -67,6 +67,7 @@ class data_class(backup_class):
         return self.background.find_all(self, log)
 
     def auto(self, trend = True, seasons = True, es = True, log = True):
+        self.zero_background()
         self.find_trend() if trend else None
         self.find_seasons() if seasons else None
         self.find_es() if es else None
