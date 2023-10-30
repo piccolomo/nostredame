@@ -1,3 +1,0 @@
-on cmd: pip install "e:\SP-Documents\forecast-package"
-
-on ipython: %run "e:\SP-Documents\forecast-package\test.py"
