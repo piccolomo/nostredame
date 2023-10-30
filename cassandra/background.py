@@ -120,7 +120,6 @@ class background_class():
     def find_trend(self, data, log = True):
         d = data.copy()#.zero_background()
         T, t = d.split()
-        t.set_quality_function('rms')
         trends = range(0, 10)
         qualities = []
         for trend in trends:
@@ -128,7 +127,7 @@ class background_class():
             t.background.trend = T.background.trend.project(t.time)
             t.update_quality()
             t.log() if log else None
-            qualities.append(t.get_quality())
+            qualities.append(t.quality.rms)
         pos = qualities.index(min(qualities))
         return trends[pos]
 
@@ -139,7 +138,6 @@ class background_class():
     def find_es(self, data, log = True):
         d = data.copy()#.zero_background()
         T, t = d.split()
-        t.set_quality_function('rms')
         periods = self.find_seasons(data, 0, 4, 0)
         qualities = []
         for period in periods:
@@ -147,7 +145,7 @@ class background_class():
             t.background.prediction = T.background.prediction.project(t.time)
             t.update_quality()
             t.log() if log else None
-            qualities.append(t.get_quality())
+            qualities.append(t.quality.rms)
         m = min([el for el in qualities if el is not None])
         pos = qualities.index(m)
         return periods[pos]

@@ -133,14 +133,6 @@ class data_class(backup_class):
         self.quality.update_label()
         return self
     
-    def set_quality_function(self, name):
-        self.quality.set_function(name)
-        return self
-
-    def get_quality(self):
-        #self.update_quality()
-        return self.quality.quality
-
 
     def log(self):
         self.update_label()
@@ -148,7 +140,6 @@ class data_class(backup_class):
 
     def log_split(self):
         train, test = self.split(retrain = True)
-        test.set_quality_function('mape')
         #train.log()
         test.log()
 
