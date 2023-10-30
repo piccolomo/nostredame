@@ -7,7 +7,7 @@ from cassandra.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
 import matplotlib
-#matplotlib.use('GTK3Agg')
+matplotlib.use('GTK3Agg')
 
 
 class data_class(backup_class):
@@ -66,10 +66,10 @@ class data_class(backup_class):
     def find_all(self, log = True):
         return self.background.find_all(self, log)
 
-    def auto(self, log = True):
-        self.find_trend()
-        self.find_seasons()
-        self.find_es()
+    def auto(self, trend = True, seasons = True, es = True, log = True):
+        self.find_trend() if trend else None
+        self.find_seasons() if seasons else None
+        self.find_es() if es else None
         self.log() if log else None
         self.log_split() if log else None
         self.save(log = log)
@@ -170,7 +170,8 @@ class data_class(backup_class):
         path = self.get_path()
         path_back = add_extension(path, 'csv')
         path_plot = add_extension(path, 'jpg')
-        background = np.transpose([self.time.data, self.get_background()])
+        extended = self.extend()
+        background = np.transpose([extended.time.data, extended.get_data(), extended.get_background()])
         background = '\n'.join([','.join(el) for el in background])
         write_text(path_back, background)
         print("background saved in", path_back) if log else None
