@@ -6,7 +6,7 @@ from cassandra.string import enclose_circled, enclose_squared
 from cassandra.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
-#import matplotlib
+import matplotlib
 #matplotlib.use('GTK3Agg')
 
 
@@ -123,7 +123,7 @@ class data_class(backup_class):
         self.update_quality()
         label = self.name.upper()
         label = (label + ' | ' + self.quality.label) if self.quality.label is not None else label
-        self.label = (label + ' ' + self.background.label) if self.background.label is not None else label
+        self.label = (label + ' | ' + self.background.label) if self.background.label is not None else label
     
     def update_quality(self):
         self.quality.set(self.get_data(), self.get_background())

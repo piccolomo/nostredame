@@ -53,7 +53,7 @@ def find_seasons(data, threshold = 1, detrend = 3, log = True):
     periods += lower
     heights = properties["peak_heights"]
     lp = len(periods); rp = range(lp)
-    print('season  height') if log else None
+    print('season  height') if log and lp > 0 else None
     [print("{:<7} {:.2f}".format(periods[i], heights[i])) for i in rp] if log else None
-    periods = np.transpose(sorted(np.transpose([periods, heights]), key = lambda el: -el[1]))[0]
+    periods = np.transpose(sorted(np.transpose([periods, heights]), key = lambda el: -el[1]))[0] if lp > 0 else []
     return [int(el) for el in periods]

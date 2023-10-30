@@ -1,6 +1,6 @@
 import cassandra as c
 
-file_name = "plu"
+file_name = "download"
 data = c.read_data(file_name, header = 1, form = "%m/%d/%Y")
 data.set_name(file_name)
 data.set_unit('m')
