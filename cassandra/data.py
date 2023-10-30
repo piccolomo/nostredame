@@ -71,6 +71,7 @@ class data_class(backup_class):
         self.find_seasons()
         self.find_es()
         self.log() if log else None
+        self.log_split() if log else None
         self.save(log = log)
         self.extend().plot() if log else None
         
@@ -137,11 +138,13 @@ class data_class(backup_class):
     def log(self):
         self.update_label()
         print(self.label)
+        return self
 
     def log_split(self):
         train, test = self.split(retrain = True)
         #train.log()
         test.log()
+        return self
 
 
     def plot(self, width = 15, font_size = 1, block = 0):

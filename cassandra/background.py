@@ -154,19 +154,22 @@ class background_class():
         data = data.copy().zero_background();
         
         t = data.find_trend(log = False)
-        data.log() if log else None
+        data.log().log_split() if log else None
         
         s = data.zero_background().find_seasons(log = False)[:3]
-        data.log() if log else None
+        print(); data.log().log_split() if log else None
         
         s = data.zero_background().fit_trend(t).find_seasons(log = False)
-        data.log() if log else None
-        
+        print(); data.log().log_split() if log else None
+
         es = data.find_es(log = False)
-        data.log() if log else None
+        print(); data.log().log_split() if log else None
+        
+        s = data.zero_background().fit_trend(t).find_es(log = False)
+        print(); data.log().log_split() if log else None
 
         es = data.zero_background().find_es(log = False)
-        data.log() if log else None
+        print(); data.log().log_split() if log else None
         
         
         
