@@ -1,6 +1,6 @@
 from statsmodels.tools.sm_exceptions import ConvergenceWarning, SpecificationWarning, ValueWarning
 from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
-from cassandra.string import dictionary_to_string
+from cassandra.string import enclose_circled
 from cassandra.trend import trend_class, np
 import warnings
 warnings.simplefilter('ignore', ConvergenceWarning)
@@ -13,9 +13,6 @@ class prediction_class(trend_class):
         self.predictor = None
         super().zero()
         
-    def set_function(self, function = None):
-        self.function = self.predictor.function if self.predictor is not None else None
-
     def set_data(self, data = None):
         self.data = None if data is None else np.array(data)
 
@@ -45,7 +42,8 @@ class prediction_class(trend_class):
         self.set_data(data)
 
     def predict(self, time):
-        return self.predictor.function(time) if self.predictor is not None else None
+        just_do_it = self.predictor is not None and self.predictor.function is not None
+        return self.predictor.function(time) if just_do_it else None
 
     def update_label(self):
         self.predictor.update_label() if self.predictor is not None else None
@@ -78,9 +76,7 @@ class predictor_class():
     def set_status(self, status = 0):
         self.status = status # -1 = Failed, 0 = Non Fitted, 1 = Fitted
 
-    def update_label(self):
-        status = "Failed " if self.status == -1 else "Not-Fitted-" if self.status == 0 else ''
-        self.label = status + self.name.title() + dictionary_to_string(self.dictionary)
+
 
         
     
@@ -96,6 +92,9 @@ class naive_predictor(predictor_class):
         self.set_function(function)
         self.set_status(1)
 
+    def update_label(self):
+        self.label = self.name.title() + enclose_circled(self.dictionary['level'])
+
         
 class es_predictor(predictor_class):
     def __init__(self, dictionary):
@@ -109,8 +108,10 @@ class es_predictor(predictor_class):
             self.set_function(function)
             self.set_status(1)
         except (RuntimeWarning, TypeError, ValueWarning, ConvergenceWarning, ValueError):
-            print("Carefull!")
-            print(data.values.data)
             self.set_status(-1)
+
+    def update_label(self):
+        status = "Failed-" if self.status == -1 else "Not-Fitted-" if self.status == 0 else ''
+        self.label = status + self.name.title() + enclose_circled(self.dictionary['seasonal_periods'])
 
 

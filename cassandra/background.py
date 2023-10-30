@@ -37,13 +37,19 @@ class background_class():
 
 
     def fit_trend(self, data, order):
-        self.trend.fit(data, order) 
+        self.trend.fit(data, order)
 
-    def fit_season(self, data, periods):
+    def fit_seasons(self, data, periods):
         self.season.fit(self.get_season_residuals(data), periods)
 
-    def set_predictor(self, name, dictionary):
-        self.prediction.set_predictor(name, dictionary)
+    def fit_naive(self, data, level = 'mean'):
+        self.prediction.set_naive(level)
+        self.fit_predictor(data)
+        return self
+     
+    def fit_es(self, data, period):
+        self.prediction.set_es(period)
+        self.fit_predictor(data)
         return self
 
     def fit_predictor(self, data):
@@ -111,13 +117,14 @@ class background_class():
 
 
     def find_trend(self, data, log = True):
-        d = data.copy().zero_background()
+        d = data.copy()#.zero_background()
         T, t = d.split()
         trends = range(0, 10)
         qualities = []
         for trend in trends:
             T.fit_trend(trend)
             t.background.trend = T.background.trend.project(t.time)
+            t.update_quality()
             t.log() if log else None
             qualities.append(t.get_quality())
         pos = qualities.index(min(qualities))
@@ -126,6 +133,38 @@ class background_class():
     def find_seasons(self, data, threshold = 1, log = True):
         data = self.get_season_residuals(data).values.data
         return find_seasons(data, threshold, log)
+
+    def find_es(self, data, log = True):
+        d = data.copy()#.zero_background()
+        T, t = d.split()
+        periods = self.find_seasons(data, 0, 0)
+        qualities = []
+        for period in periods:
+            T.fit_es(period)
+            t.background.prediction = T.background.prediction.project(t.time)
+            t.update_quality()
+            t.log() if log else None
+            qualities.append(t.get_quality())
+        pos = qualities.index(min(qualities))
+        return periods[pos]
+
+    def find_all(self, data, log = True):
+        data = data.copy().zero_background();
+        t = data.find_trend(log = False)
+        data.fit_trend(t).log() if log else None
+        
+        s = data.zero_background().find_seasons(log = False)[:3]
+        data.fit_seasons(*s).log() if log else None
+        
+        s = data.zero_background().fit_trend(t).find_seasons(log = False)[:3]
+        data.fit_seasons(*s).log() if log else None
+        
+        es = data.find_es(log = False)
+        data.fit_es(es).log() if log else None
+
+        es = data.zero_background().find_es(log = False)
+        data.fit_es(es).log() if log else None
+        
         
         
         

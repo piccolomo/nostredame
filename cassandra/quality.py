@@ -15,7 +15,7 @@ class quality_class(copy_class):
         self.function = functions[function_names.index(name)]
 
     def update_label(self):
-        self.label = self.function_name.upper() + ': ' + str(round(self.quality, 2))
+        self.label = self.function_name.upper() + ' ' + '{:.2f}'.format(self.quality)
 
     def set(self, true = None, pred = None):
         data_ok = true is not None and pred is not None

@@ -44,30 +44,39 @@ class data_class(backup_class):
         self.length_forecast = round(0.2 * self.length)
         self.length_test = round(self.length_forecast / (self.length + self.length_forecast) * self.length)
         self.length_train = self.length - self.length_test
-        
+
 
     def find_trend(self, log = True):
         return self.background.find_trend(self, log)
-        
-    def fit_trend(self, order = None):
-        self.background.fit_trend(self, order)
-        return self
     
     def find_seasons(self, threshold = 1, log = True):
         return self.background.find_seasons(self, threshold, log)
+
+    def find_es(self, log = True):
+        return self.background.find_es(self, log)
+
+    def find_all(self, log = True):
+        return self.background.find_all(self, log)
+
+        
+    def fit_trend(self, order = None):
+        self.background.fit_trend(self, order)
+        self.update_quality()
+        return self
     
-    def fit_season(self, *periods):
-        self.background.fit_season(self, periods)
+    def fit_seasons(self, *periods):
+        self.background.fit_seasons(self, periods)
+        self.update_quality()
         return self
 
     def fit_naive(self, level = 'mean'):
-        self.background.prediction.set_naive(level)
-        self.background.fit_predictor(self)
+        self.background.fit_naive(self, level)
+        self.update_quality()
         return self
      
     def fit_es(self, period):
-        self.background.prediction.set_es(period)
-        self.background.fit_predictor(self)
+        self.background.fit_es(self, period)
+        self.update_quality()
         return self
 
     
@@ -97,7 +106,6 @@ class data_class(backup_class):
 
     def update_label(self):
         self.background.update_label()
-        self.update_quality()
         
     
     def update_quality(self):
@@ -117,7 +125,7 @@ class data_class(backup_class):
     def log(self):
         self.update_label()
         out = self.name.upper()
-        out = (out + ': ' + self.background.label + ': ' + self.quality.label) if self.background.label != '' else out
+        out = (out + '  ' +  self.quality.label + '  ' + self.background.label) if self.background.label != '' else out
         print(out)
 
 
