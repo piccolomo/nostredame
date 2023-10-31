@@ -123,7 +123,7 @@ class data_class(backup_class):
         self.background.update_label()
         self.update_quality()
         label = self.quality.label if self.quality.label is not None else ''
-        label += '  ' + self.name.upper()
+        #label += '  ' + self.name.upper()
         self.label = (label + ': ' + self.background.label) if self.background.label is not None else label
     
     def update_quality(self):
