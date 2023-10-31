@@ -6,9 +6,6 @@ from cassandra.string import enclose_circled, enclose_squared
 from cassandra.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
-import matplotlib
-#matplotlib.use('GTK3Agg')
-
 
 class data_class(backup_class):
     def __init__(self, time, values):
@@ -126,9 +123,9 @@ class data_class(backup_class):
     def update_label(self):
         self.background.update_label()
         self.update_quality()
-        label = self.name.upper()
-        label = (label + ' | ' + self.quality.label) if self.quality.label is not None else label
-        self.label = (label + ' | ' + self.background.label) if self.background.label is not None else label
+        label = self.quality.label if self.quality.label is not None else ''
+        label += '  ' + self.name.upper()
+        self.label = (label + ': ' + self.background.label) if self.background.label is not None else label
     
     def update_quality(self):
         self.quality.set(self.get_data(), self.get_background())
@@ -154,17 +151,19 @@ class data_class(backup_class):
         return self
 
 
-    def plot(self, width = 15, font_size = 1, block = 0):
+    def plot(self, width = 15, font_size = 1, lw = 1, color_data = "navy", color_back = 'darkorchid'):
         self.update_label()
-        height = 9/ 16 * width; font_size = round(font_size * width / 1.1)
+        height = 9/ 16 * width; font_size = round(font_size * width / 1.1);
+        lw = lw * width / 1100
         plt.clf(); plt.close(); plt.pause(0.01);
         plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
         plt.figure(figsize = (width, height)); plt.style.use(plt.style.available[-2])
-        plt.plot(self.time.datetime, self.get_data(), label = self.name.title())
+        plt.plot(self.time.datetime, self.get_data(), label = self.name.title(), lw = lw, color = color_data)
         back = self.get_background()
-        plt.plot(self.time.datetime, back, label = self.background.label) if back is not None else None
+        plt.plot(self.time.datetime, back, label = self.background.label, lw = lw, color = color_back) if back is not None else None
         plt.title(self.name.title()); plt.ylabel(self.get_ylabel())
-        plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = block)
+        plt.legend(); plt.tight_layout(); plt.pause(0.01);
+        plt.show(block = 0)
         return self
 
     def save(self, log = True):
@@ -178,7 +177,7 @@ class data_class(backup_class):
         background = '\n'.join([','.join(el) for el in background])
         write_text(path_back, background)
         print("background saved in", path_back) if log else None
-        self.plot(block = 0); plt.savefig(path_plot); plt.pause(0.01); plt.close();
+        self.plot(); plt.savefig(path_plot); plt.pause(0.01); plt.close();
         print("plot saved in", path_plot) if log else None
         return self
     
