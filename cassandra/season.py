@@ -41,6 +41,7 @@ class season_class(trend_class):
     def update_label(self):
         periods = self.periods
         self.label = "Season" + enclose_circled(', '.join(map(str, periods))) if len(periods) > 0 else None
+
         
     def empty(self):
         new = season_class()

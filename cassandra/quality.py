@@ -2,7 +2,8 @@ from cassandra.backup import copy_class
 import numpy as np
 
 class quality_class(copy_class):
-    def __init__(self):
+    def __init__(self, digits):
+        self.digits = digits
         self.zero()
 
     def zero(self):
@@ -16,7 +17,22 @@ class quality_class(copy_class):
         self.r2 = 100 * r2(true, pred) if data_ok else None
 
     def update_label(self):
-        self.label = None if self.rms is None else 'RMS ' +  '{:4.2f}'.format(self.rms).ljust(5) + ' | R2 ' + '{:+3.2f}'.format(self.r2).ljust(7) + ' | MAPE ' + '{:3.2f}'.format(self.mape).ljust(6)
+        label =    'RMS ' + self.get_rms_string()
+        label += '| R2 '  + self.get_r2_string()
+        label += '| MAPE ' + self.get_mape_string()
+        self.label = label
+
+    def get_rms_string(self):
+        rms = 'nan' if self.rms is None else 'bad' if self.rms < -99 else ('{:' + str(self.digits) + '.2f}').format(self.rms) 
+        return rms.ljust(self.digits + 4)
+
+    def get_r2_string(self):
+        r2 = 'nan' if self.r2 is None else 'bad' if self.r2 < -99 else '{:2.2f}'.format(self.r2)
+        return r2.ljust(6)
+    
+    def get_mape_string(self):
+        mape = 'nan' if self.mape is None else 'bad' if self.mape > 100 else '{:3.2f}'.format(self.mape)
+        return mape.ljust(6)
 
 
         

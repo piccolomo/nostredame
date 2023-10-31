@@ -10,6 +10,13 @@ class background_class():
         self.season = season_class()
         self.prediction = prediction_class()
 
+        
+    def zero(self):
+        self.zero_trend()
+        self.zero_season()
+        self.zero_prediction()
+        return self
+
     def zero_trend(self):
         self.trend.zero()
         return self
@@ -21,21 +28,6 @@ class background_class():
     def zero_prediction(self):
         self.prediction.zero()
         return self
-
-    def zero(self):
-        self.zero_trend()
-        self.zero_season()
-        self.zero_prediction()
-        return self
-
-    def update_label(self):
-        self.trend.update_label()
-        self.season.update_label()
-        self.prediction.update_label()
-        labels = [self.trend.label, self.season.label, self.prediction.label]
-        labels = [l for l in labels if l is not None]
-        self.label = None if len(labels) == 0 else ' + '.join(labels)
-
 
     def fit_trend(self, data, order):
         self.trend.fit(data, order)
@@ -59,35 +51,18 @@ class background_class():
     def retrain(self, data):
         self.fit_trend(data, self.trend.order) if self.trend.order is not None else None
         self.fit_seasons(data, self.season.periods) if self.season.periods is not None else None
-        self.fit_predictor(data) if self.prediction.predictor is not None else None
+        self.fit_predictor(data)
 
 
-    def get_trend(self):
-        return self.trend.data
+    def update_label(self):
+        self.trend.update_label()
+        self.season.update_label()
+        self.prediction.update_label()
+        labels = [self.trend.label, self.season.label, self.prediction.label]
+        labels = [l for l in labels if l is not None]
+        self.label = None if len(labels) == 0 else ' + '.join(labels)
 
-    def get_season(self):
-        return self.season.data
-
-    def get_prediction(self):
-        return self.prediction.data
-
-    def get_treason(self):
-        res = [data for data in [self.get_trend(), self.get_season()] if data is not None]
-        return np.sum(res, axis = 0) if len(res) != 0 else None
-
-    def get_trend_residuals(self, data):
-        trend = self.get_trend()
-        return data.sub(trend) if trend is not None else data
-    
-    def get_season_residuals(self, data):
-        treason = self.get_treason()
-        return data.sub(treason) if treason is not None else data
-
-    def get_total(self):
-        res = [data for data in [self.get_treason(), self.get_prediction()] if data is not None]
-        return np.sum(res, axis = 0) if len(res) != 0 else None
-
-
+        
     def project(self, time):
         new = background_class()
         new.trend = self.trend.project(time)
@@ -126,12 +101,12 @@ class background_class():
             T.fit_trend(trend)
             t.background = T.project_background(t.time)
             t.update_label()
-            t.print_label() if log else None
+            t.print() if log else None
             qualities.append(t.quality.rms)
-        pos = qualities.index(min(qualities))
-        return trends[pos]
+        m = min([el for el in qualities if el is not None], default = None)
+        return trends[qualities.index(m)] if m is not None else trends[0]
 
-    def find_seasons(self, data, threshold = 1, detrend = 3, log = True):
+    def find_seasons(self, data, threshold = 0, detrend = 3, log = True):
         data = data.get_data()
         return find_seasons(data, threshold, detrend, log)
 
@@ -144,7 +119,7 @@ class background_class():
             T.fit_es(period)
             t.background = T.project_background(t.time)
             t.update_label()
-            t.print_label() if log else None
+            t.print() if log else None
             qualities.append(t.quality.rms)
         m = min([el for el in qualities if el is not None], default = None)
         return periods[qualities.index(m)] if m is not None else periods[0]
@@ -155,13 +130,13 @@ class background_class():
         t = data.find_trend(log = False)
         data.log() if log else None
         
-        s = data.zero_background().find_seasons(log = False)[:3]
+        s = data.zero_background().find_seasons(threshold = 2.1, log = False)
         data.log() if log else None
         
         es = data.zero_background().find_es(log = False)
         data.log() if log else None
         
-        s2 = data.zero_background().fit_trend(t).find_seasons(log = False)
+        s2 = data.zero_background().fit_trend(t).find_seasons(threshold = 2.1, log = False)
         data.log() if log else None
 
         data.zero_background().fit_trend(t).find_es(log = False)
@@ -172,6 +147,32 @@ class background_class():
         
         data.zero_background().fit_trend(t).fit_seasons(*s2).find_es(log = False)
         data.log() if log else None
+
+
+    def get_trend(self):
+        return self.trend.data
+
+    def get_season(self):
+        return self.season.data
+
+    def get_prediction(self):
+        return self.prediction.data
+
+    def get_treason(self):
+        res = [data for data in [self.get_trend(), self.get_season()] if data is not None]
+        return np.sum(res, axis = 0) if len(res) != 0 else None
+
+    def get_trend_residuals(self, data):
+        trend = self.get_trend()
+        return data.sub(trend) if trend is not None else data
+    
+    def get_season_residuals(self, data):
+        treason = self.get_treason()
+        return data.sub(treason) if treason is not None else data
+
+    def get_total(self):
+        res = [data for data in [self.get_treason(), self.get_prediction()] if data is not None]
+        return np.sum(res, axis = 0) if len(res) != 0 else None
 
         
         

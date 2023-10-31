@@ -26,7 +26,6 @@ remove_trend = lambda data, order = 2: data - get_trend_data(data, order)
 
 
 # Season Utilities
-transpose = lambda matrix: list(map(list, zip(*matrix)))
 
 def get_season_function(data, period):
     data = get_partial_season(data, period)
@@ -38,8 +37,6 @@ def get_partial_season(data, period):
     return np.array(period)
 
 get_acf = lambda data: acf(data, nlags = len(data))
-
-from cassandra.string import bold
 
 def find_seasons(data, threshold = 1, detrend = 3, log = True):
     l = len(data)

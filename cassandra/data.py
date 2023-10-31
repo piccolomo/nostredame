@@ -14,12 +14,12 @@ class data_class(backup_class):
         self.set_data(time, values)
         self.update_length()
         self.background = background_class()
-        self.quality = quality_class()
+        self.quality = quality_class(self.values.digits)
         self.update_label()
         backup_class.__init__(self)
         
 
-    def set_name(self, name = 'Data'):
+    def set_name(self, name = 'data'):
         self.name = name
         return self
 
@@ -47,12 +47,12 @@ class data_class(backup_class):
 
     def find_trend(self, log = False, set = True):
         trend = self.background.find_trend(self, log)
-        self.fit_trend(trend) if set else None
+        self.fit_trend(trend) if set and trend is not None else None
         return trend
 
-    def find_seasons(self, threshold = 1, detrend = 3, log = False, set = True):
+    def find_seasons(self, threshold = 0, detrend = 3, log = False, set = True):
         periods = self.background.find_seasons(self, threshold, detrend, log)
-        self.fit_seasons(*periods[:3]) if set else None
+        self.fit_seasons(*periods) if set and periods is not None else None
         return periods
 
     def find_es(self, log = False, set = True):
@@ -63,24 +63,40 @@ class data_class(backup_class):
     def find_all(self, log = True):
         return self.background.find_all(self, log)
 
-    def auto(self, trend = True, seasons = True, es = True, log = True):
+    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, plot = False):
         self.zero_background()
         self.find_trend() if trend else None
-        self.find_seasons() if seasons else None
+        self.find_seasons(threshold = 2.1) if seasons else None
         self.find_es() if es else None
         self.log() if log else None
-        self.save(log = log)
-        #self.extend().plot() if log else None
-        
+        self.save_log() if save else None
+        e = self.extend()
+        e.save_plot(log = log) if save else None
+        e.save_data(log = log) if save else None
+        e.plot() if plot else None
 
-        
+
     def fit_trend(self, order = None):
         self.background.fit_trend(self, order)
         self.update_quality()
         return self
     
+    def get_trend(self):
+        return self.background.get_trend()
+    
     def fit_seasons(self, *periods):
         self.background.fit_seasons(self, periods)
+        self.update_quality()
+        return self
+
+    def get_season(self):
+        return self.background.get_season()
+    
+    def get_treason(self):
+        return self.background.get_treason()
+    
+    def fit_es(self, period):
+        self.background.fit_es(self, period)
         self.update_quality()
         return self
 
@@ -88,11 +104,9 @@ class data_class(backup_class):
         self.background.fit_naive(self, level)
         self.update_quality()
         return self
-     
-    def fit_es(self, period):
-        self.background.fit_es(self, period)
-        self.update_quality()
-        return self
+
+    def get_prediction(self):
+        return self.background.get_prediction()
 
     
     def retrain_background(self):
@@ -105,88 +119,76 @@ class data_class(backup_class):
 
     def get_background(self):
         return self.background.get_total()
+        
 
-    def get_trend(self):
-        return self.background.get_trend()
-    
-    def get_season(self):
-        return self.background.get_season()
-    
-    def get_treason(self):
-        return self.background.get_treason()
-    
-    def get_prediction(self):
-        return self.background.get_prediction()
-
-
-    def update_label(self):
-        self.background.update_label()
-        self.update_quality()
-        label = self.quality.label if self.quality.label is not None else ''
-        label = (label + '| ' + self.background.label) if self.background.label is not None else label
-        label += ' | ' + self.name.upper()
-        self.label = label
-
-    
     def update_quality(self):
         self.quality.set(self.get_data(), self.get_background())
         self.quality.update_label()
         return self
 
-    def print_label(self):
-        print(self.label)
-
-    def get_log_data(self):
-        self.update_label()
-        return self.label
-
-    def get_log_split(self):
-        train, test = self.split(retrain = True)
-        return test.get_log_data()
+    
+    def update_label(self):
+        self.background.update_label()
+        self.update_quality()
+        label = self.quality.label if self.quality.label is not None else ''
+        background = self.background.label if self.background.label is not None else 'No Background'
+        label += '| ' + background + ' | '
+        label += self.name.title()
+        self.label = label
+        return self
 
     def update_log(self):
-        self.log_output = self.get_log_data() + '\n' + self.get_log_split()
+        self.update_label()
+        train, test = self.split(retrain = True);
+        test.update_label()
+        self.logger = self.label + '\n' + test.label
+        return self
+
+    def print(self):
+        print(self.label)
 
     def log(self):
         self.update_log()
-        print(self.log_output)
+        print(self.logger)
         print()
+        return self
 
 
     def plot(self, width = 15, font_size = 1, lw = 1): # color_data = "navy", color_back = 'darkorchid'
         self.update_label()
-        height = 9/ 16 * width; font_size = round(font_size * width / 1.1);
-        lw = lw * width / 15
-        plt.clf(); plt.close(); plt.pause(0.01);
-        plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
+        height = 9/ 16 * width; font_size = round(font_size * width / 1.1); lw = lw * width / 15
+        plt.clf(); plt.close(); plt.pause(0.01); plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
         plt.figure(figsize = (width, height)); plt.style.use(plt.style.available[-2])
         plt.plot(self.time.datetime, self.get_data(), label = self.name.title(), lw = lw)
         back = self.get_background()
         plt.plot(self.time.datetime, back, label = self.background.label, lw = lw) if back is not None else None
         plt.title(self.name.title()); plt.ylabel(self.get_ylabel())
-        plt.legend(); plt.tight_layout(); plt.pause(0.01);
-        plt.show(block = 0)
+        plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = 0)
         return self
 
-    def save(self, log = True):
-        folder = self.get_folder()
-        path_extended = join_paths(folder, 'extended.csv')
-        path_log = join_paths(folder, 'log.txt')
-        path_plot = join_paths(folder, 'plot.jpg')
-        extended = self.extend()
-        background = extended.get_background()
-        background = np.zeros(extended.length) * np.nan if background is None else background
-        background = np.transpose([extended.time.data, extended.get_data(), background])
-        background = '\n'.join([','.join(el) for el in background])
-        write_text(path_extended, background)
-        print("background saved in", path_extended) if log else None
+    def save_data(self, log = True):
+        path = join_paths(self.get_folder(), 'data.csv')
+        data = [self.time.data, self.get_data()]
+        background = self.get_background()
+        data = data if background is None else data + [background]
+        data = np.transpose(data)
+        text = '\n'.join([''.join(line) for line in data])
+        write_text(path, text)
+        print("data saved in", path) if log else None
+
+    def save_plot(self, log = True):
+        path = join_paths(self.get_folder(), 'plot.jpg')
+        self.plot(); plt.savefig(path); plt.pause(0.01); plt.close();
+        print("plot saved in", path) if log else None
+
+    def save_log(self, log = True):
+        path = join_paths(self.get_folder(), 'log.txt')
         self.update_log()
-        write_text(path_log, self.log_output)
-        print("log saved in", path_log) if log else None
-        self.plot(); plt.savefig(path_plot); plt.pause(0.01); plt.close();
-        
-        print("plot saved in", path_plot) if log else None
-        return self
+        write_text(path, self.logger)
+        print("log saved in", path) if log else None
+
+    def save(self, log = True):
+        self.save_data(log); self.save_plot(log); self.save_log(log)
     
     
     def forecast(self):
@@ -254,7 +256,7 @@ class data_class(backup_class):
         new.update_label()
         return new
 
-
+    
     def get_ylabel(self):
         name = self.name.title()
         name = name if self.unit == '' else name + ' ' + enclose_squared(self.unit)
@@ -265,17 +267,6 @@ class data_class(backup_class):
         folder = join_paths(output_folder, name)
         create_folder(folder)
         return folder
-
-
-
-    # def __add__(self, data):
-    #     new = data.copy()
-    #     new.values += data.values
-    #     return new
-
-    # def __sub__(self, data):
-    #     new = data.copy()
-    #     return new
 
     def add(self, array):
         new = self.copy()
