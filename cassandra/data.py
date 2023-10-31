@@ -3,7 +3,7 @@ from cassandra.values import values_class
 from cassandra.background import background_class, np
 from cassandra.quality import quality_class
 from cassandra.string import enclose_circled, enclose_squared
-from cassandra.file import join_paths, add_extension, write_text, output_folder
+from cassandra.file import join_paths, add_extension, write_text, output_folder, create_folder
 import matplotlib.pyplot as plt
 
 
@@ -164,20 +164,20 @@ class data_class(backup_class):
         return self
 
     def save(self, log = True):
-        path = self.get_path()
-        path_back = add_extension(path, 'csv')
-        path_log = add_extension(path, 'txt')
-        path_plot = add_extension(path, 'jpg')
+        folder = self.get_folder()
+        path_extended = join_paths(folder, 'extended.csv')
+        path_log = join_paths(folder, 'log.txt')
+        path_plot = join_paths(folder, 'plot.jpg')
         extended = self.extend()
         background = extended.get_background()
         background = np.zeros(extended.length) * np.nan if background is None else background
         background = np.transpose([extended.time.data, extended.get_data(), background])
         background = '\n'.join([','.join(el) for el in background])
-        write_text(path_back, background)
-        print("background saved in", path_back) if log else None
+        write_text(path_extended, background)
+        print("background saved in", path_extended) if log else None
         self.update_log()
         write_text(path_log, self.log_output)
-        print("log saved in", path_back) if log else None
+        print("log saved in", path_log) if log else None
         self.plot(); plt.savefig(path_plot); plt.pause(0.01); plt.close();
         
         print("plot saved in", path_plot) if log else None
@@ -254,9 +254,12 @@ class data_class(backup_class):
         name = name if self.unit == '' else name + ' ' + enclose_squared(self.unit)
         return name
 
-    def get_path(self):
+    def get_folder(self):
         name = self.name.lower().replace(' ', '-')
-        return join_paths(output_folder, name)
+        folder = join_paths(output_folder, name)
+        create_folder(folder)
+        return folder
+
 
 
     # def __add__(self, data):

@@ -17,6 +17,9 @@ def join_paths(*args):
 def base_name(path):
     return os.path.basename(correct_path(path))
 
+def create_folder(path):
+    os.makedirs(path) if not os.path.exists(path) else None
+
 add_extension = lambda path, extension: path + "." + extension if "." not in base_name(path) else path
 
 
@@ -28,9 +31,9 @@ code_folder = join_paths(forecast_folder, "code")
 input_folder = join_paths(forecast_folder, "input")
 output_folder = join_paths(forecast_folder, "output")
 
-os.makedirs(code_folder) if not os.path.exists(input_folder) else None
-os.makedirs(input_folder) if not os.path.exists(input_folder) else None
-os.makedirs(output_folder) if not os.path.exists(output_folder) else None
+create_folder(code_folder)
+create_folder(input_folder)
+create_folder(output_folder)
 
 
 # Read Files
