@@ -150,6 +150,7 @@ class data_class(backup_class):
     def log(self):
         self.update_log()
         print(self.log_output)
+        print()
 
 
     def plot(self, width = 15, font_size = 1, lw = 1): # color_data = "navy", color_back = 'darkorchid'
