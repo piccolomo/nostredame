@@ -170,8 +170,7 @@ class background_class():
         data.zero_background().fit_seasons(*s).find_es(log = False)
         data.log() if log else None
         
-        data.zero_background().fit_trend(t).find_seasons(*s2)
-        data.find_es(log = False)
+        data.zero_background().fit_trend(t).fit_seasons(*s2).find_es(log = False)
         data.log() if log else None
 
         
