@@ -248,6 +248,7 @@ class data_class(backup_class):
         new = data_class(self.time.copy(), self.values.copy())
         new.name = self.name
         new.unit = self.unit
+        new.set_forecast_length(self.length_forecast)
         new.background = self.background.copy()
         new.quality = self.quality.copy()
         new.update_label()

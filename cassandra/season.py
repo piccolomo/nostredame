@@ -22,7 +22,7 @@ class season_class(trend_class):
     def fit(self, data, periods):
         self.set_periods(periods)
         self.select_periods(data.length)
-        self.fit_function(data)
+        self.fit_function(data) if len(self.periods) > 0 else None
         self.update_data(data.time)
         self.update_label()
       

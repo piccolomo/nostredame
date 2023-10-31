@@ -137,7 +137,7 @@ class background_class():
 
     def find_es(self, data, log = True):
         d = data.copy()#.zero_background()
-        T, t = d.split()
+        T, t = d.split(True)
         periods = self.find_seasons(data, 0, 4, 0)
         qualities = []
         for period in periods:
