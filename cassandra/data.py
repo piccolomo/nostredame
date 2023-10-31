@@ -132,7 +132,9 @@ class data_class(backup_class):
         self.quality.set(self.get_data(), self.get_background())
         self.quality.update_label()
         return self
-    
+
+    def print_label(self):
+        print(self.label)
 
     def get_log_data(self):
         self.update_label()

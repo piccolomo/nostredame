@@ -125,8 +125,8 @@ class background_class():
         for trend in trends:
             T.fit_trend(trend)
             t.background.trend = T.background.trend.project(t.time)
-            t.update_quality()
-            t.log_data() if log else None
+            t.update_label()
+            t.print_label() if log else None
             qualities.append(t.quality.rms)
         pos = qualities.index(min(qualities))
         return trends[pos]
@@ -143,8 +143,8 @@ class background_class():
         for period in periods:
             T.fit_es(period)
             t.background.prediction = T.background.prediction.project(t.time)
-            t.update_quality()
-            t.log_data() if log else None
+            t.update_label()
+            t.print_label() if log else None
             qualities.append(t.quality.rms)
         m = min([el for el in qualities if el is not None])
         pos = qualities.index(m)
