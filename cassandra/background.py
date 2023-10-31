@@ -120,7 +120,7 @@ class background_class():
     def find_trend(self, data, log = True):
         d = data.copy()#.zero_background()
         T, t = d.split()
-        trends = range(0, 10)
+        trends = range(0, 5)
         qualities = []
         for trend in trends:
             T.fit_trend(trend)

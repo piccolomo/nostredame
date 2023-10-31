@@ -16,7 +16,8 @@ class quality_class(copy_class):
         self.r2 = 100 * r2(true, pred) if data_ok else None
 
     def update_label(self):
-        self.label = None if self.rms is None else 'RMS {:4.2f}'.format(self.rms) + ' | R2 {:+4.2f}'.format(self.r2) + ' | MAPE {:3.2f}'.format(self.mape)
+        self.label = None if self.rms is None else 'RMS ' +  '{:4.2f}'.format(self.rms).ljust(5) + ' | R2 ' + '{:+3.2f}'.format(self.r2).ljust(7) + ' | MAPE ' + '{:3.2f}'.format(self.mape).ljust(6)
+
 
         
 # Utilities
