@@ -34,7 +34,7 @@ class prediction_class(trend_class):
 
     def fit(self, data):
         self.predictor.fit(data) if self.predictor is not None else None
-        self.update_data(data.time)
+        self.update_data(data.time) if self.predictor.status == 1 else self.set_data() 
         self.update_label()
 
     def update_data(self, time):
@@ -84,7 +84,7 @@ class naive_predictor(predictor_class):
 
     def fit(self, data):
         level = self.dictionary["level"]
-        level = 0 if level == "zero" else data.values.mean if level == "mean" else data.values.last if level == "last" else data.values.first if level == "first" else level
+        level = 0 if level == "zero" else deata.values.mean if level == "mean" else data.values.last if level == "last" else data.values.first if level == "first" else level
         dictionary = {"level": level}
         function = lambda time: np.full(time.length, 0) + level
         self.set_function(function)
@@ -107,6 +107,7 @@ class es_predictor(predictor_class):
             self.set_status(1)
         except (RuntimeWarning, TypeError, ValueWarning, ConvergenceWarning, ValueError):
             self.set_status(-1)
+            self.set_function()
 
     def update_label(self):
         status = "Failed-" if self.status == -1 else "Not-Fitted-" if self.status == 0 else ''

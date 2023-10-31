@@ -124,7 +124,7 @@ class background_class():
         qualities = []
         for trend in trends:
             T.fit_trend(trend)
-            t.background.trend = T.background.trend.project(t.time)
+            t.background = T.project_background(t.time)
             t.update_label()
             t.print_label() if log else None
             qualities.append(t.quality.rms)
@@ -137,18 +137,17 @@ class background_class():
 
     def find_es(self, data, log = True):
         d = data.copy()#.zero_background()
-        T, t = d.split(True)
+        T, t = d.split(0)
         periods = self.find_seasons(data, 0, 4, 0)
         qualities = []
         for period in periods:
             T.fit_es(period)
-            t.background.prediction = T.background.prediction.project(t.time)
+            t.background = T.project_background(t.time)
             t.update_label()
             t.print_label() if log else None
             qualities.append(t.quality.rms)
-        m = min([el for el in qualities if el is not None])
-        pos = qualities.index(m)
-        return periods[pos]
+        m = min([el for el in qualities if el is not None], default = None)
+        return periods[qualities.index(m)] if m is not None else periods[0]
 
     def find_all(self, data, log = True):
         data = data.copy().zero_background();
@@ -159,17 +158,22 @@ class background_class():
         s = data.zero_background().find_seasons(log = False)[:3]
         data.log() if log else None
         
-        s = data.zero_background().fit_trend(t).find_seasons(log = False)
-        data.log() if log else None
-
-        es = data.find_es(log = False)
-        data.log() if log else None
-        
-        s = data.zero_background().fit_trend(t).find_es(log = False)
-        data.log() if log else None
-
         es = data.zero_background().find_es(log = False)
         data.log() if log else None
+        
+        s2 = data.zero_background().fit_trend(t).find_seasons(log = False)
+        data.log() if log else None
+
+        data.zero_background().fit_trend(t).find_es(log = False)
+        data.log() if log else None
+
+        data.zero_background().fit_seasons(*s).find_es(log = False)
+        data.log() if log else None
+        
+        data.zero_background().fit_trend(t).find_seasons(*s2)
+        data.find_es(log = False)
+        data.log() if log else None
+
         
         
         

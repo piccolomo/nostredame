@@ -57,7 +57,7 @@ class data_class(backup_class):
 
     def find_es(self, log = False, set = True):
         es = self.background.find_es(self, log)
-        self.fit_es(es) if set else None
+        self.fit_es(es) if set and es is not None else None
         return es
 
     def find_all(self, log = True):
@@ -211,7 +211,7 @@ class data_class(backup_class):
 
         test_time = self.time.part(self.length_train, self.length)
         test = self.project(test_time)
-        test.background = train.project_background(test.time)
+        test.background = train.project_background(test.time) #if retrain 
 
         train.name = self.name + " train"; train.set_unit(self.unit)
         test.name = self.name + " test"; test.set_unit(self.unit)
