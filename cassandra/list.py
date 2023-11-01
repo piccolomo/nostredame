@@ -2,6 +2,8 @@ from statsmodels.tsa.stattools import acf
 from scipy.signal import find_peaks
 import numpy as np
 
+import warnings
+warnings.simplefilter('ignore', np.RankWarning)
 
 # Time Utilities
 to_time_class_function = lambda function: (lambda time: np.array([function(el) for el in time.index]))
@@ -54,3 +56,9 @@ def find_seasons(data, threshold = 1, detrend = 3, log = True):
     [print("{:<7} {:.2f}".format(periods[i], heights[i])) for i in rp] if log else None
     periods = np.transpose(sorted(np.transpose([periods, heights]), key = lambda el: -el[1]))[0] if lp > 0 else []
     return [int(el) for el in periods]
+
+def get_minimum(data, qualities):
+    m = min([el for el in qualities if el is not None], default = None)
+    return data[qualities.index(m)] if m is not None else None
+
+    

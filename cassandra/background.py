@@ -1,7 +1,7 @@
 from cassandra.trend import trend_class, np
 from cassandra.season import season_class
 from cassandra.prediction import prediction_class
-from cassandra.list import find_seasons
+from cassandra.list import find_seasons, get_minimum
 
 
 class background_class():
@@ -92,37 +92,46 @@ class background_class():
         return new
 
 
-    def find_trend(self, data, log = True):
-        d = data.copy()#.zero_background()
-        T, t = d.split()
-        trends = range(0, 5)
-        qualities = []
-        for trend in trends:
-            T.fit_trend(trend)
-            t.background = T.project_background(t.time)
-            t.update_label()
-            t.print() if log else None
-            qualities.append(t.quality.rms)
-        m = min([el for el in qualities if el is not None], default = None)
-        return trends[qualities.index(m)] if m is not None else trends[0]
-
     def find_seasons(self, data, threshold = 0, detrend = 3, log = True):
         data = data.get_data()
         return find_seasons(data, threshold, detrend, log)
 
-    def find_es(self, data, log = True):
+    methods = ['data', 'Data', 'train', 'test']
+    
+    def find_trend(self, data, method = 'test', order = 5, log = True):
+        method_index = self.methods.index(method) if method in self.methods else 3
         d = data.copy()#.zero_background()
-        T, t = d.split(0)
-        periods = self.find_seasons(data, 0, 4, 0)
+        trends = range(0, order + 1)
+        qualities = []
+        for trend in trends:
+            d.fit_trend(trend)
+            T, t = d.split(retrain = True)
+            D = T.append(t); D.name = d.name + ' partially trained'; D.update_label()
+            (d.print(), D.print(), T.print(),  t.print(),  print()) if log else None
+            quality = [d.quality.rms, D.quality.rms, T.quality.rms, t.quality.rms][method_index]
+            qualities.append(quality)
+        return get_minimum(trends, qualities)
+
+    def find_es(self, data, method = 'data', depth = 2, log = True):
+        method_index = self.methods.index(method) if method in self.methods else 3
+        d = data.copy()#.zero_background()
+        periods = self.get_es_seasons(data, depth)
         qualities = []
         for period in periods:
-            T.fit_es(period)
-            t.background = T.project_background(t.time)
-            t.update_label()
-            t.print() if log else None
-            qualities.append(t.quality.rms)
-        m = min([el for el in qualities if el is not None], default = None)
-        return periods[qualities.index(m)] if m is not None else periods[0]
+            d.fit_es(period)
+            T, t = d.split(retrain = True)
+            D = T.append(t); D.name = d.name + ' partially trained'; D.update_label()
+            (d.print(), D.print(), T.print(),  t.print(),  print()) if log else None
+            quality = [d.quality.rms, D.quality.rms, T.quality.rms, t.quality.rms][method_index]
+            qualities.append(quality)
+        return get_minimum(periods, qualities)
+
+    def get_es_seasons(self, data, depth = 1):
+        periods = self.find_seasons(data, 0, 4, 0)
+        periods = [p + j for p in periods for j in range(-depth, depth + 1)]
+        periods = [p for p in periods if p in range(data.length)]
+        return list(set(periods))
+            
 
     def find_all(self, data, log = True):
         data = data.copy().zero_background();

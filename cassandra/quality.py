@@ -28,7 +28,7 @@ class quality_class(copy_class):
 
     def get_r2_string(self):
         r2 = 'nan' if self.r2 is None else 'bad' if self.r2 < -99 else '{:2.2f}'.format(self.r2)
-        return r2.ljust(6)
+        return r2.ljust(7)
     
     def get_mape_string(self):
         mape = 'nan' if self.mape is None else 'bad' if self.mape > 100 else '{:3.2f}'.format(self.mape)

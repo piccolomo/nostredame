@@ -45,8 +45,8 @@ class data_class(backup_class):
         self.length_train = self.length - self.length_test
 
 
-    def find_trend(self, log = False, set = True):
-        trend = self.background.find_trend(self, log)
+    def find_trend(self, method = 'test', order = 5, log = False, set = True):
+        trend = self.background.find_trend(self, method, order, log)
         self.fit_trend(trend) if set and trend is not None else None
         return trend
 
@@ -55,30 +55,26 @@ class data_class(backup_class):
         self.fit_seasons(*periods) if set and periods is not None else None
         return periods
 
-    def find_es(self, log = False, set = True):
-        es = self.background.find_es(self, log)
+    def find_es(self, method = 'data', depth = 2, log = False, set = True):
+        es = self.background.find_es(self, method, depth, log)
         self.fit_es(es) if set and es is not None else None
         return es
 
     def find_all(self, log = True):
         return self.background.find_all(self, log)
 
-    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, plot = False):
+    def auto(self, trend = True, seasons = True, es = True, log = True, save = False):
         self.zero_background()
         self.find_trend() if trend else None
-        self.find_seasons(threshold = 2.1) if seasons else None
+        self.find_seasons(threshold = 1) if seasons else None
         self.find_es() if es else None
         self.log() if log else None
-        self.save_log() if save else None
-        e = self.extend()
-        e.save_plot(log = log) if save else None
-        e.save_data(log = log) if save else None
-        e.plot() if plot else None
-
+        self.save() if save else None
+        
 
     def fit_trend(self, order = None):
         self.background.fit_trend(self, order)
-        self.update_quality()
+        self.update_label()
         return self
     
     def get_trend(self):
@@ -86,7 +82,7 @@ class data_class(backup_class):
     
     def fit_seasons(self, *periods):
         self.background.fit_seasons(self, periods)
-        self.update_quality()
+        self.update_label()
         return self
 
     def get_season(self):
@@ -97,12 +93,12 @@ class data_class(backup_class):
     
     def fit_es(self, period):
         self.background.fit_es(self, period)
-        self.update_quality()
+        self.update_label()
         return self
 
     def fit_naive(self, level = 'mean'):
         self.background.fit_naive(self, level)
-        self.update_quality()
+        self.update_label()
         return self
 
     def get_prediction(self):
@@ -135,23 +131,20 @@ class data_class(backup_class):
         label += '| ' + background + ' | '
         label += self.name.title()
         self.label = label
+        self.logger = ''
         return self
 
-    def update_log(self):
-        self.update_label()
+    def log(self):
+        self.print()
         train, test = self.split(retrain = True);
-        test.update_label()
-        self.logger = self.label + '\n' + test.label
+        train.print()
+        test.print()
+        print()
+        self.logger = '\n'.join([self.label, train.label, test.label])
         return self
 
     def print(self):
         print(self.label)
-
-    def log(self):
-        self.update_log()
-        print(self.logger)
-        print()
-        return self
 
 
     def plot(self, width = 15, font_size = 1, lw = 1): # color_data = "navy", color_back = 'darkorchid'
@@ -166,29 +159,23 @@ class data_class(backup_class):
         plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = 0)
         return self
 
-    def save_data(self, log = True):
+    def save(self, log = True):
         path = join_paths(self.get_folder(), 'data.csv')
-        data = [self.time.data, self.get_data()]
-        background = self.get_background()
+        extended = self.extend()
+        data = [extended.time.data, extended.get_data()]
+        background = extended.get_background()
         data = data if background is None else data + [background]
         data = np.transpose(data)
-        text = '\n'.join([''.join(line) for line in data])
+        text = '\n'.join([','.join(line) for line in data])
         write_text(path, text)
         print("data saved in", path) if log else None
-
-    def save_plot(self, log = True):
         path = join_paths(self.get_folder(), 'plot.jpg')
-        self.plot(); plt.savefig(path); plt.pause(0.01); plt.close();
+        extended.plot(); plt.savefig(path); plt.pause(0.01); plt.close();
         print("plot saved in", path) if log else None
-
-    def save_log(self, log = True):
         path = join_paths(self.get_folder(), 'log.txt')
-        self.update_log()
         write_text(path, self.logger)
         print("log saved in", path) if log else None
 
-    def save(self, log = True):
-        self.save_data(log); self.save_plot(log); self.save_log(log)
     
     
     def forecast(self):
@@ -217,6 +204,7 @@ class data_class(backup_class):
 
         train.name = self.name + " train"; train.set_unit(self.unit)
         test.name = self.name + " test"; test.set_unit(self.unit)
+        train.update_label(); test.update_label()
         return train, test
 
     def part(self, begin, end):
