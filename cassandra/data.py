@@ -6,6 +6,11 @@ from cassandra.string import enclose_circled, enclose_squared
 from cassandra.file import join_paths, add_extension, write_text, output_folder, create_folder
 import matplotlib.pyplot as plt
 
+#plt.ioff()
+import matplotlib
+matplotlib.use('GTK3Agg')  # or another backend ('Qt5Agg', 'WXAgg', etc.)
+
+#['GTK3Agg', 'GTK3Cairo', 'GTK4Agg', 'GTK4Cairo', 'MacOSX', 'nbAgg', 'QtAgg', 'QtCairo', 'Qt5Agg', 'Qt5Cairo', 'TkAgg', 'TkCairo', 'WebAgg', 'WX', 'WXAgg', 'WXCairo', 'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg', 'template']
 
 class data_class(backup_class):
     def __init__(self, time, values):
@@ -24,9 +29,18 @@ class data_class(backup_class):
         self.surname = surname
         return self
 
+    def get_name(self):
+        return self.name if self.name is not None else ''
+    
+    def get_surname(self):
+        return self.surname if self.surname is not None else ''
+
     def set_unit(self, unit = None):
         self.unit = unit
         return self
+
+    def get_unit(self):
+        return enclose_squared(self.unit) if self.unit is not None else ''
 
 
     def set_data(self, time, values):
@@ -125,10 +139,12 @@ class data_class(backup_class):
 
     
     def update_label(self):
-        label = self.quality.label if self.quality.label is not None else ''
+        quality = self.quality.label if self.quality.label is not None else ''
         background = self.background.label if self.background.label is not None else 'No Background'
-        label += '| ' + background + ' | '
-        label += self.name.title()
+        label = self.get_name().title() + ' ' + self.get_surname()
+        label = label.ljust(20 + 15) + ' | '
+        label += quality + ' | '
+        label += background 
         self.label = label
         self.logger = ''
         return self
@@ -147,7 +163,7 @@ class data_class(backup_class):
     def print_split(self):
         self.print()
         train, test = self.split(retrain = True);
-        D = train.append(test); D.set_name(self.name + ' ' + 'Train + Test'); D.update();
+        D = train.append(test); D.set_name(self.get_name(), 'Train + Test'); D.update();
         D.print()
         train.print()
         test.print()
@@ -164,11 +180,12 @@ class data_class(backup_class):
         plt.clf(); plt.close(); plt.pause(0.01); plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
         plt.figure(figsize = (width, height)); plt.style.use(plt.style.available[-2])
         time, data, back, err = self.time.datetime, self.get_data(), self.get_background(), self.error
-        plt.plot(time, self.get_data(), label = self.name.title(), lw = lw)
+        plt.plot(time, self.get_data(), label = self.get_name().title(), lw = lw)
         plt.plot(time, back, label = self.background.label, lw = lw, color = color_back) if back is not None else None
         plt.fill_between(time, back - err, back + err, alpha = 0.1, color = color_back, lw = 0) if back is not None and err is not None else None
-        plt.title(self.name.title()); plt.ylabel(self.get_ylabel())
-        plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = 1)
+        ylabel = self.get_name().title() + self.get_surname() + self.get_unit()
+        plt.title(self.get_name().title() + self.get_surname()); plt.ylabel(ylabel)
+        plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = 0)
         return self
 
     def save(self, log = True):
@@ -182,7 +199,7 @@ class data_class(backup_class):
         write_text(path, text)
         print("data saved in", path) if log else None
         path = join_paths(self.get_folder(), 'plot.jpg')
-        extended.plot(); plt.savefig(path); plt.pause(0.01); plt.close();
+        extended.plot();  plt.savefig(path); plt.pause(0.1);  plt.close();
         print("plot saved in", path) if log else None
         path = join_paths(self.get_folder(), 'log.txt')
         write_text(path, self.logger)
@@ -194,8 +211,8 @@ class data_class(backup_class):
         time = self.time.forecast(self.length_forecast)
         data = self.project(time)
         data.background = self.project_background(time)
-        data.name = self.name + " forecasted" + enclose_circled(self.length_forecast)
-        data.unit = self.unit
+        data.set_name(self.name, "Forecasted" + enclose_circled(self.length_forecast))
+        data.set_unit(self.unit)
         data.update()
         data.set_error(self.get_forecast_error())
         return data
@@ -204,8 +221,8 @@ class data_class(backup_class):
         time = self.time.extend(self.length_forecast)
         data = self.project(time)
         data.background = self.project_background(time)
-        data.name = self.name + " extended" + enclose_circled(self.length_forecast)
-        data.unit = self.unit
+        data.set_name(self.name, "Extended" + enclose_circled(self.length_forecast))
+        data.set_unit(self.unit)
         data.update()
         forecast_error = self.get_forecast_error()
         error = np.concatenate([self.error, forecast_error]) if self.error is not None and forecast_error is not None else None
@@ -223,8 +240,8 @@ class data_class(backup_class):
         test = self.project(test_time)
         test.background = train.project_background(test.time) #if retrain 
 
-        train.set_name(self.name) + " train"; train.set_unit(self.unit)
-        test.name = self.name + " test"; test.set_unit(self.unit)
+        train.set_name(self.name, "Train"); train.set_unit(self.unit)
+        test.set_name(self.name, "Test"); test.set_unit(self.unit)
         train.update(); test.update()
         return train, test
 
@@ -233,7 +250,7 @@ class data_class(backup_class):
         data = self.project(time)
         data.background = self.background.part(begin, end)
         surname = '[{0}:{1}]'.format(begin, end)
-        data.set_name(self.name, surname)
+        data.set_name(self.name, self.surname)
         data.set_unit(self.unit)
         return data
 
@@ -252,7 +269,7 @@ class data_class(backup_class):
         values = self.values.append(data.values)
         new = data_class(time, values)
         new.background = self.background.append(data.background)
-        new.set_name(self.name, " + " + data.name)
+        new.set_name(self.get_name(), ".append(" + data.get_name() + ')')
         new.set_unit(self.unit)
         new.update()
         return new
@@ -268,11 +285,6 @@ class data_class(backup_class):
         return new
 
     
-    def get_ylabel(self):
-        name = self.name.title() if self.name is not None else 'data'
-        name = name if self.unit == '' else name + ' ' + enclose_squared(self.unit)
-        return name
-
     def get_folder(self):
         name = self.name.lower().replace(' ', '-')
         folder = join_paths(output_folder, name)
@@ -305,6 +317,7 @@ class data_class(backup_class):
         T, t = data.split(retrain = True)
         e0 = data.quality.rms
         e1 = t.quality.rms
+        return np.array([e1] * data.length_forecast)
         #return np.linspace(e0, max(e1, e0), data.length_forecast) if e0 is not None and e1 is not None else None
         #return np.linspace(e0, e0 * (1 + (t.length_forecast / data.length)**0.1), data.length_forecast) if e0 is not None and e1 is not None else None
-        return e0 * np.exp(np.arange(data.length_forecast) * (t.length_forecast / data.length)) if e0 is not None and e1 is not None else None
+        #return e0 * np.exp(np.arange(data.length_forecast) * (t.length_forecast / data.length)) if e0 is not None and e1 is not None else None
