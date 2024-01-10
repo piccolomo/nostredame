@@ -12,7 +12,7 @@ setup(
     author = "Savino Piccolomo",
     author_email = "piccolomo@gmail.com",
     name = 'cassandra',
-    version='1.4.0',
+    version='1.5.0',
     description = 'forecasts',
     #long_description = README,
     #long_description_content_type = "text/markdown",  

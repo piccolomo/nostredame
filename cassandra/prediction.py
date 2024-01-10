@@ -2,6 +2,8 @@ from statsmodels.tools.sm_exceptions import ConvergenceWarning, SpecificationWar
 from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
 from cassandra.string import enclose_circled
 from cassandra.trend import trend_class, np
+import pandas as pd
+
 import warnings
 warnings.simplefilter('ignore', ConvergenceWarning)
 
@@ -38,11 +40,14 @@ class prediction_class(trend_class):
 
     def fit_es(self, data):
         try:
-            model = ES(endog = data.values.data, **self.dictionary)
+            data = pd.Series(data.values.data, index = data.time.datetime_pandas)
+            model = ES(endog = data, **self.dictionary)
             fit = model.fit()
-            function = lambda time: fit.predict(time.index[0], time.index[-1])
+            function_mean = lambda time: get_es_prediction(fit, time)
+            #function_error = lambda time: get_es_error(fit, time)
             self.set_status(1)
-            self.set_function(function)
+            self.set_function(function_mean)
+            #self.model = model
         except (RuntimeWarning, TypeError, ValueWarning, ConvergenceWarning, ValueError):
             self.set_status(-1)
             self.set_function()
@@ -76,3 +81,14 @@ class prediction_class(trend_class):
         new.update_label()
         return new
 
+
+def get_es_prediction(fit, time):
+    index = time.datetime_pandas
+    return fit.predict(time.index[0], time.index[-1])
+
+# def get_es_error(fit, time):
+#     index = time.datetime_pandas
+#     prediction = fit.get_prediction(index[0], index[-1])
+#     res = prediction.pred_int(1 - 0.341).to_numpy()
+#     res = [el[1] - el[0] for el in res]
+#     return res, prediction, fit

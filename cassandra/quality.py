@@ -1,6 +1,7 @@
 from cassandra.backup import copy_class
 import numpy as np
 
+
 class quality_class(copy_class):
     def __init__(self, digits):
         self.digits = digits

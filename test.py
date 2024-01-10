@@ -1,10 +1,15 @@
 import cassandra as c
 
-file_name = "download"
-data = c.read_data(file_name, header = 1, form = "%m/%d/%Y")
+#file_name = "car-sales"
+#data = c.read_data(file_name, header = 1, form = '"%Y-%m"')
+#data.set_name(file_name)
+#data.set_unit('m')
+
+
+file_name = "general_weekly"
+data = c.read_data(file_name, header = 1, form = '%Y-%m-%d')
 data.set_name(file_name)
 data.set_unit('m')
-
 
 #data.auto(log = False)
 
@@ -18,7 +23,6 @@ data.set_unit('m')
 #data.fit_naive('mean')
 
 data.log()
-data.log_split()
 
 #data.plot()
 #data.save()

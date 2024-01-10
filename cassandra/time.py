@@ -26,7 +26,7 @@ class time_class(copy_class):
         self.datetime = [dt.strptime(el, self.form) for el in self.data]
 
     def update_frequency(self):
-        self.freq = get_frequency(self.datetime)
+        self.freq = get_frequency(self.datetime) if self.length > 1 else None
 
     def set_pandas(self):
         self.datetime_pandas = DatetimeIndex(self.datetime, freq = 'infer')
@@ -56,6 +56,7 @@ def get_frequency(datetimes):
     t = datetimes; l = len(t)
     delta = [relativedelta(t[i + 1], t[i]) for i in range(0, l - 1)];
     delta_no_duplicates = list(set(delta))
-    if len(delta_no_duplicates) != 1:
+    if len(delta_no_duplicates) != 1: # 0 is ok for empty data
+        print([(i, delta[i]) for i in range(l-1)])
         raise ValueError("time differences seem inconsistent (or you are using first or end of the month data).") 
     return delta_no_duplicates[0]

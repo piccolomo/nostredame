@@ -165,7 +165,7 @@ class background_class():
         return self.season.data
 
     def get_prediction(self):
-        return self.prediction.data
+        return self.prediction.data#.T[1] if self.prediction.data is not None else None
 
     def get_treason(self):
         res = [data for data in [self.get_trend(), self.get_season()] if data is not None]
@@ -182,6 +182,7 @@ class background_class():
     def get_total(self):
         res = [data for data in [self.get_treason(), self.get_prediction()] if data is not None]
         return np.sum(res, axis = 0) if len(res) != 0 else None
+
 
         
         
