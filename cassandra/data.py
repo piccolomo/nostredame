@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('GTK3Agg')  # or another backend ('Qt5Agg', 'WXAgg', etc.)
 
-#['GTK3Agg', 'GTK3Cairo', 'GTK4Agg', 'GTK4Cairo', 'MacOSX', 'nbAgg', 'QtAgg', 'QtCairo', 'Qt5Agg', 'Qt5Cairo', 'TkAgg', 'TkCairo', 'WebAgg', 'WX', 'WXAgg', 'WXCairo', 'agg', 'cairo', 'pdf', 'pgf', 'ps', 'svg', 'template']
 
 class data_class(backup_class):
     def __init__(self, time, values):
@@ -20,7 +19,9 @@ class data_class(backup_class):
         self.update_length()
         self.background = background_class()
         self.quality = quality_class(self.values.digits)
-        self.update()
+        self.update_label()
+        self.logger = ''
+        self.update_error()
         backup_class.__init__(self)
         
 
@@ -78,18 +79,19 @@ class data_class(backup_class):
     def find_all(self, log = True):
         return self.background.find_all(self, log)
 
-    def auto(self, trend = True, seasons = True, es = True, log = True, save = False):
+    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, method = 'test'):
         self.zero_background()
-        self.find_trend(log = log) if trend else None
+        self.find_trend(log = log, method = method) if trend else None
         self.find_seasons(threshold = 1, log = log) if seasons else None
-        self.find_es(log = log) if es else None
+        self.find_es(log = log, method = method) if es else None
         self.log() if log else None
         self.save() if save else None
+        return self
         
 
     def fit_trend(self, order = None):
         self.background.fit_trend(self, order)
-        self.update()
+        self.update_label()
         return self
     
     def get_trend(self):
@@ -97,7 +99,7 @@ class data_class(backup_class):
     
     def fit_seasons(self, *periods):
         self.background.fit_seasons(self, periods)
-        self.update()
+        self.update_label()
         return self
 
     def get_season(self):
@@ -108,12 +110,12 @@ class data_class(backup_class):
     
     def fit_es(self, period):
         self.background.fit_es(self, period)
-        self.update()
+        self.update_label()
         return self
 
     def fit_naive(self, level = 'mean'):
         self.background.fit_naive(self, level)
-        self.update()
+        self.update_label()
         return self
 
     def get_prediction(self):
@@ -139,6 +141,8 @@ class data_class(backup_class):
 
     
     def update_label(self):
+        self.background.update_label()
+        self.update_quality()
         quality = self.quality.label if self.quality.label is not None else ''
         background = self.background.label if self.background.label is not None else 'No Background'
         label = self.get_name().title() + ' ' + self.get_surname()
@@ -146,35 +150,22 @@ class data_class(backup_class):
         label += quality + ' | '
         label += background 
         self.label = label
-        self.logger = ''
         return self
 
-    def update(self):
-        self.background.update_label()
-        self.update_quality()
+    def _add_log(self):
         self.update_label()
-        self.update_error()
-        return self
-
-    def log(self):
-        self.update()
-        self.print_split()
-
-    def print_split(self):
-        self.print()
         train, test = self.split(retrain = True);
-        D = train.append(test); D.set_name(self.get_name(), 'Train + Test'); D.update();
-        D.print()
-        train.print()
-        test.print()
+        D = train.append(test); D.set_name(self.get_name(), 'Train + Test'); D.update_label();
         self.logger = '\n'.join([self.label, train.label, test.label])
         return self
 
-    def print(self):
-        print(self.label)
-
+    def log(self):
+        self._add_log()
+        print(self.logger)
+        return self
 
     def plot(self, width = 15, font_size = 1, lw = 1): # color_data = "navy", color_back = 'darkorchid'
+        self.update_label();
         height = 9 / 16 * width; font_size = round(font_size * width / 1.1); lw = lw * width / 15
         color_back = 'goldenrod'
         plt.clf(); plt.close(); plt.pause(0.01); plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
@@ -183,8 +174,10 @@ class data_class(backup_class):
         plt.plot(time, self.get_data(), label = self.get_name().title(), lw = lw)
         plt.plot(time, back, label = self.background.label, lw = lw, color = color_back) if back is not None else None
         plt.fill_between(time, back - err, back + err, alpha = 0.1, color = color_back, lw = 0) if back is not None and err is not None else None
-        ylabel = self.get_name().title() + self.get_surname() + self.get_unit()
-        plt.title(self.get_name().title() + self.get_surname()); plt.ylabel(ylabel)
+        title = self.get_name().title() + ' ' + self.get_surname()
+        plt.title(title); plt.ylabel(title + ' ' + self.get_unit())
+        m, M = min(time), max(time); s = M - m
+        plt.xlim(m - s / 50, M + s / 50)
         plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = 0)
         return self
 
@@ -199,12 +192,12 @@ class data_class(backup_class):
         write_text(path, text)
         print("data saved in", path) if log else None
         path = join_paths(self.get_folder(), 'plot.jpg')
-        extended.plot();  plt.savefig(path); plt.pause(0.1);  plt.close();
+        extended.plot();  plt.pause(0.1); plt.savefig(path);   plt.close();
         print("plot saved in", path) if log else None
         path = join_paths(self.get_folder(), 'log.txt')
+        self._add_log()
         write_text(path, self.logger)
         print("log saved in", path) if log else None
-
     
     
     def forecast(self):
@@ -213,7 +206,7 @@ class data_class(backup_class):
         data.background = self.project_background(time)
         data.set_name(self.name, "Forecasted" + enclose_circled(self.length_forecast))
         data.set_unit(self.unit)
-        data.update()
+        data.update_label()
         data.set_error(self.get_forecast_error())
         return data
 
@@ -223,14 +216,16 @@ class data_class(backup_class):
         data.background = self.project_background(time)
         data.set_name(self.name, "Extended" + enclose_circled(self.length_forecast))
         data.set_unit(self.unit)
-        data.update()
+        self.update_error()
+        data.update_label()
         forecast_error = self.get_forecast_error()
         error = np.concatenate([self.error, forecast_error]) if self.error is not None and forecast_error is not None else None
         data.set_error(error)
         return data
     
     def split(self, test_length = None, retrain = False):
-        test_length = round(test_length * self.length) if test_length is not None and test_length < 1 else test_length
+        test_length = 0.2 if test_length is None else test_length
+        test_length = test_length  if test_length > 1 else round(self.length * test_length) 
         train_length = self.length_train if test_length is None else self.length - test_length
         
         train = self.part(0, train_length);
@@ -242,7 +237,7 @@ class data_class(backup_class):
 
         train.set_name(self.name, "Train"); train.set_unit(self.unit)
         test.set_name(self.name, "Test"); test.set_unit(self.unit)
-        train.update(); test.update()
+        train.update_label(); test.update_label()
         return train, test
 
     def part(self, begin, end):
@@ -271,7 +266,7 @@ class data_class(backup_class):
         new.background = self.background.append(data.background)
         new.set_name(self.get_name(), ".append(" + data.get_name() + ')')
         new.set_unit(self.unit)
-        new.update()
+        new.update_label()
         return new
 
     def copy(self):
@@ -281,7 +276,7 @@ class data_class(backup_class):
         new.set_forecast_length(self.length_forecast)
         new.background = self.background.copy()
         new.quality = self.quality.copy()
-        new.update()
+        new.update_label()
         return new
 
     
@@ -300,7 +295,7 @@ class data_class(backup_class):
         return self.add(-array)
 
     def __repr__(self):
-        return self.label
+        return self.name
 
     def __len__(self):
         return self.length
@@ -317,7 +312,8 @@ class data_class(backup_class):
         T, t = data.split(retrain = True)
         e0 = data.quality.rms
         e1 = t.quality.rms
-        return np.array([e1] * data.length_forecast)
+        e = max(e0, e1) if e1 is not None else e0
+        return np.array([e] * data.length_forecast)
         #return np.linspace(e0, max(e1, e0), data.length_forecast) if e0 is not None and e1 is not None else None
         #return np.linspace(e0, e0 * (1 + (t.length_forecast / data.length)**0.1), data.length_forecast) if e0 is not None and e1 is not None else None
         #return e0 * np.exp(np.arange(data.length_forecast) * (t.length_forecast / data.length)) if e0 is not None and e1 is not None else None

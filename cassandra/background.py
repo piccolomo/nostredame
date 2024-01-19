@@ -106,7 +106,7 @@ class background_class():
         for trend in trends:
             d.fit_trend(trend)
             T, t = d.split(retrain = True)
-            D = T.append(t); D.name = d.name + ' partially trained'; D.update_label()
+            D = T.append(t); D.set_name(data.get_name(), 'Train + Test'); D.update_label();
             (d.print(), D.print(), T.print(),  t.print(),  print()) if log else None
             quality = [d.quality.rms, D.quality.rms, T.quality.rms, t.quality.rms][method_index]
             qualities.append(quality)
@@ -120,7 +120,7 @@ class background_class():
         for period in periods:
             d.fit_es(period)
             T, t = d.split(retrain = True)
-            D = T.append(t); D.name = d.name + ' partially trained'; D.update_label()
+            D = T.append(t); D.set_name(data.get_name(), 'Train + Test'); D.update_label();
             (d.print(), D.print(), T.print(),  t.print(),  print()) if log else None
             quality = [d.quality.rms, D.quality.rms, T.quality.rms, t.quality.rms][method_index]
             qualities.append(quality)
