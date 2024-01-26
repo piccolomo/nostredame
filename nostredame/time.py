@@ -1,4 +1,4 @@
-from cassandra.backup import copy_class
+from nostredame.backup import copy_class
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta
 from pandas import DatetimeIndex

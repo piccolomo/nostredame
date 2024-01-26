@@ -1,6 +1,6 @@
 import os
-from cassandra.time import time_class
-from cassandra.values import values_class
+from nostredame.time import time_class
+from nostredame.values import values_class
 
 
 # Path Manipulation

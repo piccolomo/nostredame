@@ -1,7 +1,7 @@
 from statsmodels.tools.sm_exceptions import ConvergenceWarning, SpecificationWarning, ValueWarning
 from statsmodels.tsa.holtwinters import ExponentialSmoothing as ES
-from cassandra.string import enclose_circled
-from cassandra.trend import trend_class, np
+from nostredame.string import enclose_circled
+from nostredame.trend import trend_class, np
 import pandas as pd
 
 import warnings

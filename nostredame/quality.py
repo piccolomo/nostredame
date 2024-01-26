@@ -1,4 +1,4 @@
-from cassandra.backup import copy_class
+from nostredame.backup import copy_class
 import numpy as np
 
 

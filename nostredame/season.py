@@ -1,8 +1,8 @@
-from cassandra.trend import trend_class, np
-from cassandra.list import remove_trend, get_season_function, to_time_class_function
+from nostredame.trend import trend_class, np
+from nostredame.list import remove_trend, get_season_function, to_time_class_function
 from numpy import sum
-from cassandra.string import enclose_circled
-from cassandra.backup import copy_class
+from nostredame.string import enclose_circled
+from nostredame.backup import copy_class
 
 
 class season_class(trend_class):

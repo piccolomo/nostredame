@@ -1,9 +1,9 @@
-from cassandra.backup import backup_class, copy_class
-from cassandra.values import values_class
-from cassandra.background import background_class, np
-from cassandra.quality import quality_class
-from cassandra.string import enclose_circled, enclose_squared
-from cassandra.file import join_paths, add_extension, write_text, output_folder, create_folder
+from nostredame.backup import backup_class, copy_class
+from nostredame.values import values_class
+from nostredame.background import background_class, np
+from nostredame.quality import quality_class
+from nostredame.string import enclose_circled, enclose_squared
+from nostredame.file import join_paths, add_extension, write_text, output_folder, create_folder
 import matplotlib.pyplot as plt
 
 #plt.ioff()
@@ -61,29 +61,29 @@ class data_class(backup_class):
         self.length_train = self.length - self.length_test
 
 
-    def find_trend(self, method = 'test', order = 5, log = False, set = True):
-        trend = self.background.find_trend(self, method, order, log)
+    def find_trend(self, method = 'test', order = 5, test_length = None, log = False, set = True):
+        trend = self.background.find_trend(self, method, order, test_length, log)
         self.fit_trend(trend) if set and trend is not None else None
         return trend
 
-    def find_seasons(self, threshold = 0, detrend = 3, log = False, set = True):
+    def find_seasons(self, threshold = 0, detrend = 3, test_length = None, log = False, set = True):
         periods = self.background.find_seasons(self, threshold, detrend, log)
         self.fit_seasons(*periods) if set and periods is not None else None
         return periods
 
-    def find_es(self, method = 'data', depth = 1, log = False, set = True):
-        es = self.background.find_es(self, method, depth, log)
+    def find_es(self, method = 'data', depth = 1, test_length = None, log = False, set = True):
+        es = self.background.find_es(self, method, depth, test_length, log)
         self.fit_es(es) if set and es is not None else None
         return es
 
-    def find_all(self, log = True):
-        return self.background.find_all(self, log)
+    def find_all(self, method = 'Data', test_length = None, log = True):
+        return self.background.find_all(self, method = method, test_length = test_length, log = log)
 
-    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, method = 'test'):
+    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, method = 'test', test_length = None):
         self.zero_background()
-        self.find_trend(log = log, method = method) if trend else None
+        self.find_trend(test_length = test_length, log = log, method = method) if trend else None
         self.find_seasons(threshold = 1, log = log) if seasons else None
-        self.find_es(log = log, method = method) if es else None
+        self.find_es(log = log, test_length = test_length, method = method) if es else None
         self.log() if log else None
         self.save() if save else None
         return self
@@ -156,29 +156,33 @@ class data_class(backup_class):
         self.update_label()
         train, test = self.split(retrain = True);
         D = train.append(test); D.set_name(self.get_name(), 'Train + Test'); D.update_label();
-        self.logger = '\n'.join([self.label, train.label, test.label])
+        self.logger = '\n'.join([self.label, D.label, train.label, test.label])
         return self
+
+    def print(self):
+        print(self.label)
 
     def log(self):
         self._add_log()
         print(self.logger)
         return self
 
-    def plot(self, width = 15, font_size = 1, lw = 1): # color_data = "navy", color_back = 'darkorchid'
+    def plot(self, width = 15, font_size = 1.1, lw = 1.7, color = 'mediumseagreen', show = True): # color_data = "navy", color_back = 'darkorchid'
         self.update_label();
         height = 9 / 16 * width; font_size = round(font_size * width / 1.1); lw = lw * width / 15
-        color_back = 'goldenrod'
+        color_data, color_back = 'royalblue', color
         plt.clf(); plt.close(); plt.pause(0.01); plt.rcParams.update({'font.size': font_size, "font.family": "sans-serif", 'toolbar': 'None'})
         plt.figure(figsize = (width, height)); plt.style.use(plt.style.available[-2])
         time, data, back, err = self.time.datetime, self.get_data(), self.get_background(), self.error
-        plt.plot(time, self.get_data(), label = self.get_name().title(), lw = lw)
+        plt.plot(time, self.get_data(), label = self.get_name().title(), lw = lw, color = color_data)
         plt.plot(time, back, label = self.background.label, lw = lw, color = color_back) if back is not None else None
-        plt.fill_between(time, back - err, back + err, alpha = 0.1, color = color_back, lw = 0) if back is not None and err is not None else None
+        plt.fill_between(time, back - err, back + err, alpha = 0.2, color = color_back, lw = 0) if back is not None and err is not None else None
         title = self.get_name().title() + ' ' + self.get_surname()
         plt.title(title); plt.ylabel(title + ' ' + self.get_unit())
         m, M = min(time), max(time); s = M - m
         plt.xlim(m - s / 50, M + s / 50)
-        plt.legend(); plt.tight_layout(); plt.pause(0.01); plt.show(block = 0)
+        plt.legend(); plt.tight_layout();  
+        (plt.pause(0.01), plt.show(block = True)) if show else None
         return self
 
     def save(self, log = True):
@@ -192,7 +196,7 @@ class data_class(backup_class):
         write_text(path, text)
         print("data saved in", path) if log else None
         path = join_paths(self.get_folder(), 'plot.jpg')
-        extended.plot();  plt.pause(0.1); plt.savefig(path);   plt.close();
+        extended.plot(); plt.pause(0.1); plt.savefig(path);   plt.close();
         print("plot saved in", path) if log else None
         path = join_paths(self.get_folder(), 'log.txt')
         self._add_log()

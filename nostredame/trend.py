@@ -1,6 +1,6 @@
-from cassandra.backup import copy_class
-from cassandra.string import enclose_circled
-from cassandra.list import get_trend_function, to_time_class_function
+from nostredame.backup import copy_class
+from nostredame.string import enclose_circled
+from nostredame.list import get_trend_function, to_time_class_function
 import numpy as np
 
 

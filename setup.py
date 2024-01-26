@@ -6,16 +6,16 @@ from setuptools import setup, find_packages
 HERE = pathlib.Path(__file__).parent
 
 # The text of the README file
-#README = (HERE / "README.md").read_text()
+README = (HERE / "README.md").read_text()
 
 setup(
     author = "Savino Piccolomo",
     author_email = "piccolomo@gmail.com",
-    name = 'cassandra',
+    name = 'nostredame',
     version='1.5.0',
     description = 'forecasts',
-    #long_description = README,
-    #long_description_content_type = "text/markdown",  
+    long_description = README,
+    long_description_content_type = "text/markdown",   
     license = "MIT",
     #url = 'https://github.com/piccolomo/plotext',
     packages = find_packages(),

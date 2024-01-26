@@ -1,12 +1,12 @@
-`cassandra` **forecasts data in the future** using the best combination of trend, seasonality and  exponential smoothing, found with automatic train test split. Results can be saved easily, as text and plot.
+`nostredame` **forecasts data in the future** using the best combination of trend, seasonality and  exponential smoothing, found with automatic train test split. Results can be saved easily, as text and plot.
 
 These is the first version pubblished, better documentation will be written in the future. Here is a quick guide.
 
-Cassandra creates a 'Forecast' folder in your home directory: add all the csv data to forecasts in its 'input' subfolder; the corespondent saved outputs will be placed in the 'output' subfolder. 
+Nostredame creates a 'Forecast' folder in your home directory: add all the csv data to forecasts in its 'input' subfolder; the corespondent saved outputs will be placed in the 'output' subfolder. 
 
 here is bluprint code
 ```
-import cassandra as c
+import nostredame as c
 
 file_name = "my_data" # no need to specify csv extension or folder path
 
