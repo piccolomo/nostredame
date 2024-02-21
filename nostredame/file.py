@@ -1,7 +1,8 @@
 import os
 from nostredame.time import time_class
 from nostredame.values import values_class
-
+import openpyxl
+from datetime import datetime
 
 # Path Manipulation
 def correct_path(folder):
@@ -56,4 +57,25 @@ def write_text(path, text):
     file.close()
 
 
-
+def read_excel_data(path, log = True):
+    path = add_extension(path, 'xlsx')
+    path = correct_path(path)
+    print(path)
+    print("reading excel file in", path) if log else None
+    workbook = openpyxl.load_workbook(path)
+    names = workbook.sheetnames
+    sheets = [workbook[name] for name in names]
+    matrices = {}
+    for sheet in sheets:
+        matrix = []
+        for row in sheet.iter_rows(min_row = 1, max_row = sheet.max_row, min_col = 1, max_col = sheet.max_column):
+            line = []
+            for cell in row:
+                el = cell.value
+                el = el.strftime('%d/%m/%Y') if isinstance(el, datetime) else str(el)
+                line.append(el)
+            matrix.append(line)
+        matrices[sheet.title.strip()] = matrix
+    workbook.close()
+    print("excel file read") if log else None
+    return matrices

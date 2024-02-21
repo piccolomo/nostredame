@@ -16,6 +16,8 @@ class values_class(copy_class):
         self.first = self.data[0] if self.length > 0 else None
         self.last = self.data[-1] if self.length > 0 else None
         self.mean = np.mean(self.data) if self.length > 0 else None
+        self.min = np.nanmin(self.data)
+        self.max = np.nanmax(self.data)
         data = [len(str(int(el))) for el in self.data if not np.isnan(el)]
         self.digits = max(data, default = 0)
 

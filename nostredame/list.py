@@ -52,7 +52,7 @@ def find_seasons(data, threshold = 1, detrend = 3, log = True):
     periods += lower
     heights = properties["peak_heights"]
     lp = len(periods); rp = range(lp)
-    periods, heights = list(zip(*sorted(zip(periods, heights), key=lambda el: -el[1])))
+    periods, heights = transpose(sorted(transpose([periods, heights]), key=lambda el: -el[1]), 2)
     print('season  height') if log and lp > 0 else None
     [print("{:<7} {:.2f}".format(periods[i], heights[i])) for i in rp] if log else None
     periods = np.transpose(sorted(np.transpose([periods, heights]), key = lambda el: -el[1]))[0] if lp > 0 else []
@@ -61,5 +61,8 @@ def find_seasons(data, threshold = 1, detrend = 3, log = True):
 def get_minimum(data, qualities):
     m = min([el for el in qualities if el is not None], default = None)
     return data[qualities.index(m)] if m is not None else None
+
+
+transpose = lambda data, length = 1: [[]] * length if data == [] else list(map(list, zip(*data)))
 
     

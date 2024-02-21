@@ -98,28 +98,28 @@ class background_class():
 
     methods = ['data', 'Data', 'train', 'test']
     
-    def find_trend(self, data, method = 'test', order = 5, test_length = None, log = True):
+    def find_trend(self, data, method = 'test', order = 5, log = True):
         method_index = self.methods.index(method) if method in self.methods else 3
         d = data.copy()#.zero_background()
         trends = range(0, order + 1)
         qualities = []
         for trend in trends:
             d.fit_trend(trend)
-            T, t = d.split(test_length = test_length, retrain = True)
+            T, t = d.split(retrain = True)
             D = T.append(t); D.set_name(data.get_name(), 'Train + Test'); D.update_label();
             (d.print(), D.print(), T.print(),  t.print(),  print()) if log else None
             quality = [d.quality.rms, D.quality.rms, T.quality.rms, t.quality.rms][method_index]
             qualities.append(quality)
         return get_minimum(trends, qualities)
 
-    def find_es(self, data, method = 'data', depth = 2, test_length = None, log = True):
+    def find_es(self, data, method = 'data', depth = 2, log = True):
         method_index = self.methods.index(method) if method in self.methods else 3
         d = data.copy()#.zero_background()
         periods = self.get_es_seasons(data, depth)
         qualities = []
         for period in periods:
             d.fit_es(period)
-            T, t = d.split(test_length = test_length, retrain = True)
+            T, t = d.split(retrain = True)
             D = T.append(t); D.set_name(data.get_name(), 'Train + Test'); D.update_label();
             (d.print(), D.print(), T.print(), t.print(), print()) if log else None
             quality = [d.quality.rms, D.quality.rms, T.quality.rms, t.quality.rms][method_index]
@@ -133,29 +133,29 @@ class background_class():
         return list(set(periods))
             
 
-    def find_all(self, data, method = 'test', test_length = None, log = True):
+    def find_all(self, data, method = 'test', log = True):
         threshold = 1.1
         data = data.copy().zero_background();
         
-        t = data.find_trend(method = method, test_length = test_length, log = False)
+        t = data.find_trend(method = method, log = False)
         (data.log(), print()) if log else None
         
         s = data.zero_background().find_seasons(threshold = threshold, log = False)
         (data.log(), print()) if log else None
         
-        es = data.zero_background().find_es(method = method, test_length = test_length, log = False)
+        es = data.zero_background().find_es(method = method, log = False)
         (data.log(), print()) if log else None
         
         s2 = data.zero_background().fit_trend(t).find_seasons(threshold = threshold, log = False)
         (data.log(), print()) if log else None
 
-        data.zero_background().fit_trend(t).find_es(method = method, test_length = test_length, log = False)
+        data.zero_background().fit_trend(t).find_es(method = method, log = False)
         (data.log(), print()) if log else None
 
-        data.zero_background().fit_seasons(*s).find_es(method = method, test_length = test_length, log = False)
+        data.zero_background().fit_seasons(*s).find_es(method = method, log = False)
         (data.log(), print()) if log else None
         
-        data.zero_background().fit_trend(t).fit_seasons(*s2).find_es(test_length = test_length, log = False)
+        data.zero_background().fit_trend(t).fit_seasons(*s2).find_es(log = False)
         (data.log(), print()) if log else None
 
 
@@ -184,7 +184,17 @@ class background_class():
         res = [data for data in [self.get_treason(), self.get_prediction()] if data is not None]
         return np.sum(res, axis = 0) if len(res) != 0 else None
 
-
+    def mean(self):
+        data = self.get_total()
+        return np.mean(data) if data is not None else np.nan
+    
+    def min(self):
+        data = self.get_total()
+        return np.min(data) if data is not None else np.nan
+    
+    def max(self):
+        data = self.get_total()
+        return np.max(data) if data is not None else np.nan
         
         
         

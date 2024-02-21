@@ -7,8 +7,11 @@ from nostredame.file import join_paths, add_extension, write_text, output_folder
 import matplotlib.pyplot as plt
 
 #plt.ioff()
+import sys
 import matplotlib
-matplotlib.use('GTK3Agg')  # or another backend ('Qt5Agg', 'WXAgg', etc.)
+platform = 'windows' if sys.platform in {'win32', 'cygwin'} else 'unix' 
+
+matplotlib.use('GTK3Agg') if platform == 'unix' else None  # or another backend ('Qt5Agg', 'WXAgg', etc.)
 
 
 class data_class(backup_class):
@@ -56,34 +59,38 @@ class data_class(backup_class):
         self.set_forecast_length(round(0.2 * self.length))
 
     def set_forecast_length(self, length):
-        self.length_forecast = length
-        self.length_test = round(self.length_forecast / (self.length + self.length_forecast) * self.length)
-        self.length_train = self.length - self.length_test
+        self.forecast_length = length
 
+    def get_forecast_ratio(self):
+        return round(10000 * self.forecast_length / (self.length + self.forecast_length)) / 10000
 
-    def find_trend(self, method = 'test', order = 5, test_length = None, log = False, set = True):
-        trend = self.background.find_trend(self, method, order, test_length, log)
+    def set_test_length(self, length = None):
+        self.test_length = correct_test_length(length, self.length)
+        self.train_length = self.length - self.test_length
+
+    def find_trend(self, method = 'test', order = 5, log = False, set = True):
+        trend = self.background.find_trend(self, method, order, log)
         self.fit_trend(trend) if set and trend is not None else None
         return trend
 
-    def find_seasons(self, threshold = 0, detrend = 3, test_length = None, log = False, set = True):
+    def find_seasons(self, threshold = 0, detrend = 3, log = False, set = True):
         periods = self.background.find_seasons(self, threshold, detrend, log)
         self.fit_seasons(*periods) if set and periods is not None else None
         return periods
 
-    def find_es(self, method = 'data', depth = 1, test_length = None, log = False, set = True):
-        es = self.background.find_es(self, method, depth, test_length, log)
+    def find_es(self, method = 'data', depth = 1, log = False, set = True):
+        es = self.background.find_es(self, method, depth, log)
         self.fit_es(es) if set and es is not None else None
         return es
 
-    def find_all(self, method = 'Data', test_length = None, log = True):
-        return self.background.find_all(self, method = method, test_length = test_length, log = log)
+    def find_all(self, method = 'Data', log = True):
+        return self.background.find_all(self, method = method, log = log)
 
-    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, method = 'test', test_length = None):
+    def auto(self, trend = True, seasons = True, es = True, log = True, save = False, method = 'test'):
         self.zero_background()
-        self.find_trend(test_length = test_length, log = log, method = method) if trend else None
+        self.find_trend(log = log, method = method) if trend else None
         self.find_seasons(threshold = 1, log = log) if seasons else None
-        self.find_es(log = log, test_length = test_length, method = method) if es else None
+        self.find_es(log = log, method = method) if es else None
         self.log() if log else None
         self.save() if save else None
         return self
@@ -181,6 +188,10 @@ class data_class(backup_class):
         plt.title(title); plt.ylabel(title + ' ' + self.get_unit())
         m, M = min(time), max(time); s = M - m
         plt.xlim(m - s / 50, M + s / 50)
+        m = np.nanmin([self.background.min(), self.values.min])
+        M = np.nanmax([self.background.max(), self.values.max])
+        s = M - m
+        plt.ylim(m - s / 10, M + s / 10)
         plt.legend(); plt.tight_layout();  
         (plt.pause(0.01), plt.show(block = True)) if show else None
         return self
@@ -196,7 +207,7 @@ class data_class(backup_class):
         write_text(path, text)
         print("data saved in", path) if log else None
         path = join_paths(self.get_folder(), 'plot.jpg')
-        extended.plot(); plt.pause(0.1); plt.savefig(path);   plt.close();
+        extended.plot(show = 0); plt.pause(0.1); plt.savefig(path);   plt.close();
         print("plot saved in", path) if log else None
         path = join_paths(self.get_folder(), 'log.txt')
         self._add_log()
@@ -205,21 +216,21 @@ class data_class(backup_class):
     
     
     def forecast(self):
-        time = self.time.forecast(self.length_forecast)
+        time = self.time.forecast(self.forecast_length)
         data = self.project(time)
         data.background = self.project_background(time)
-        data.set_name(self.name, "Forecasted" + enclose_circled(self.length_forecast))
-        data.set_unit(self.unit)
+        self.copy_details_to(data)
+        data.set_name(self.name, "Forecasted" + enclose_circled(self.forecast_length))
         data.update_label()
         data.set_error(self.get_forecast_error())
         return data
 
     def extend(self):
-        time = self.time.extend(self.length_forecast)
+        time = self.time.extend(self.forecast_length)
         data = self.project(time)
         data.background = self.project_background(time)
-        data.set_name(self.name, "Extended" + enclose_circled(self.length_forecast))
-        data.set_unit(self.unit)
+        self.copy_details_to(data)
+        data.set_name(self.name, "Extended" + enclose_circled(self.forecast_length))
         self.update_error()
         data.update_label()
         forecast_error = self.get_forecast_error()
@@ -227,15 +238,12 @@ class data_class(backup_class):
         data.set_error(error)
         return data
     
-    def split(self, test_length = None, retrain = False):
-        test_length = 0.2 if test_length is None else test_length
-        test_length = test_length  if test_length > 1 else round(self.length * test_length) 
-        train_length = self.length_train if test_length is None else self.length - test_length
+    def split(self, retrain = False):
         
-        train = self.part(0, train_length);
+        train = self.part(0, self.train_length);
         train.retrain_background() if retrain else None
 
-        test_time = self.time.part(train_length, self.length)
+        test_time = self.time.part(self.train_length, self.length)
         test = self.project(test_time)
         test.background = train.project_background(test.time) #if retrain 
 
@@ -249,8 +257,8 @@ class data_class(backup_class):
         data = self.project(time)
         data.background = self.background.part(begin, end)
         surname = '[{0}:{1}]'.format(begin, end)
+        self.copy_details_to(data)
         data.set_name(self.name, self.surname)
-        data.set_unit(self.unit)
         return data
 
     def project(self, time):
@@ -268,20 +276,24 @@ class data_class(backup_class):
         values = self.values.append(data.values)
         new = data_class(time, values)
         new.background = self.background.append(data.background)
+        self.copy_details_to(new)
         new.set_name(self.get_name(), ".append(" + data.get_name() + ')')
-        new.set_unit(self.unit)
         new.update_label()
         return new
 
     def copy(self):
         new = data_class(self.time.copy(), self.values.copy())
-        new.set_name(self.name)
-        new.set_unit(self.unit)
-        new.set_forecast_length(self.length_forecast)
         new.background = self.background.copy()
         new.quality = self.quality.copy()
-        new.update_label()
+        self.copy_details_to(new)
         return new
+
+    def copy_details_to(self, new):
+        new.set_name(self.name)
+        new.set_unit(self.unit)
+        new.set_forecast_length(self.forecast_length)
+        new.set_test_length(self.test_length)
+        new.update_label()
 
     
     def get_folder(self):
@@ -299,10 +311,13 @@ class data_class(backup_class):
         return self.add(-array)
 
     def __repr__(self):
-        return self.name
+        return 'Data(' + (self.name if self.name is not None else '') + ')'
 
     def __len__(self):
         return self.length
+
+    def mean(self):
+        return self.values.mean
 
     def set_error(self, error = None):
         self.error = error
@@ -313,11 +328,24 @@ class data_class(backup_class):
 
     def get_forecast_error(self):
         data = self.copy()
-        T, t = data.split(retrain = True)
-        e0 = data.quality.rms
-        e1 = t.quality.rms
-        e = max(e0, e1) if e1 is not None else e0
-        return np.array([e] * data.length_forecast)
-        #return np.linspace(e0, max(e1, e0), data.length_forecast) if e0 is not None and e1 is not None else None
-        #return np.linspace(e0, e0 * (1 + (t.length_forecast / data.length)**0.1), data.length_forecast) if e0 is not None and e1 is not None else None
-        #return e0 * np.exp(np.arange(data.length_forecast) * (t.length_forecast / data.length)) if e0 is not None and e1 is not None else None
+        #T, t = data.split(retrain = True)
+        #e0 = data.quality.rms
+        #et = t.quality.rms
+        et = self.quality.rms
+        et = et if et is not None else np.nan
+        e = et + et * np.arange(0, self.forecast_length) 
+        #e = max(e0, e1) if e1 is not None else e0
+        return e
+        #return np.linspace(e0, max(e1, e0), data.forecast_length) if e0 is not None and e1 is not None else None
+        #return np.linspace(e0, e0 * (1 + (t.forecast_length / data.length)**0.1), data.forecast_length) if e0 is not None and e1 is not None else None
+        #return e0 * np.exp(np.arange(data.forecast_length) * (t.forecast_length / data.length)) if e0 is not None and e1 is not None else None
+
+    def get_forecast_change(self):
+        f = self.forecast().background.mean()
+        d = self.mean()
+        return 100 * (f - d) / d
+
+
+def correct_test_length(test_length, data_length):
+    test_length = 0.2 if test_length is None else test_length
+    return test_length if test_length > 1 else round(data_length * test_length) 
